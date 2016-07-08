@@ -69,9 +69,11 @@ If you choose not to use a reference genome you must explicitly specify `--no_re
 Providing an annotation file provides context such as known transcripts, and exons, introns, and intergenic regions to help describe the data.  It is also necessary for rarefraction curves.
 
 If you choose not to use a reference annotation you must explicitly specify `--no_annotation`
+
+The genePred format is described here.
 http://www.healthcare.uiowa.edu/labs/au/IDP/IDP_gpd_format.asp
 
-The specific genepred format used here is "Gene Predictions and RefSeq Genes with Gene Names" genePred format described by UCSC.
+And it is also described here as "Gene Predictions and RefSeq Genes with Gene Names" genePred format described by UCSC.
 https://genome.ucsc.edu/FAQ/FAQformat.html#format9
 
 - geneName
@@ -93,7 +95,7 @@ To view the output xhtml Mozilla Firefox or Google Chrome browser is recommend.
 
 Since the recommended output type contains large URI data embedded in the xhtml page, Internet Explorer will likely not be compatible.  The memory requirements of the regular output may strain some systems.
 
-If you want to share the visual results with others we recommend the `--portable_output` option because this version contains only the main text and png files.
+If you only want to share the visual results with others we recommend the `--portable_output` option because this version contains only the main text and png files.
 
 If accessing the embedded data in the xhtml is a problem, you can output the data in a folder format `--output_folder`, which can provide you more convenient access.
 
