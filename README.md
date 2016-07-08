@@ -17,13 +17,13 @@ Ultimately this software should be suitable for assessing alignments of from a v
 
 You can add the `AlignQC/bin` directory to your path if you want to call `alignqc` directly from the command line.
 
-If you require a path for python 2.7+ other than `python`, or a shell other than `/bin/sh` you can set modify `AlignQC/bin/alignqc` to reflect this.
+If you require a path for python 2.7+ other than `python`, or a shell other than `/bin/sh` you can modify `AlignQC/bin/alignqc` to reflect this.
 
 If you prefer to run AlignQC directly from python you can use `AlignQC/bin/alignqc.py`
 
 i.e., `python AlignQC/bin/alignqc.py`
 
-By default `Rscript` should be installed in the path, if it is not, you can specify a location in the `analysis` command with the `--rscript_path` option.
+By default `Rscript` should be installed in your path, if it is not, you can specify a location during the `analysis` command with the `--rscript_path` option.
 
 ##### Fast start
 The following command should be sufficient for assessing a long read alignment.
