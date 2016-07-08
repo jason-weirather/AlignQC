@@ -1,7 +1,14 @@
 # AlignQC
-Generate a report on sequencing alignments to understand read alignments vs read sizes, error patterns in reads, annotations and rarefractions.
+**Generate a report** on sequencing alignments to understand read alignments vs read sizes, error patterns in reads, annotations and rarefractions.
+
+**Share your reports** with anyone who has an internet browser.
 
 Ultimately this software should be suitable for assessing alignments of from a variety of sequencing platforms and a variety of sequence types.  The focus for the first version of this software is on the transcriptome analysis of third generation sequencing data outputs.
+
+##### Requirements
+- Linux
+- R
+- python 2.7+
 
 ## Analysis
 `alignqc analysis`
