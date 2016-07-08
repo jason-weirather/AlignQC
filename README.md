@@ -5,10 +5,13 @@
 
 Ultimately this software should be suitable for assessing alignments of from a variety of sequencing platforms and a variety of sequence types.  The focus for the first version of this software is on the transcriptome analysis of third generation sequencing data outputs.
 
-##### Requirements
+##### Report Generation Requirements
 - Linux
 - R
 - python 2.7+
+
+##### Report Viewing Requirements
+- Mozilla Firefox or Google Chrome Browser
 
 ##### Fast start
 The following command should be sufficient for assessing a long read alignment.
@@ -20,7 +23,7 @@ If you don't readily have your reference genome or reference annotation availabl
 `alignqc analysis long_reads.bam --no_reference --no_annotation -o long_reads.alignqc.xhtml`
 
 ## AlignQC programs
-Currently AlignQC only has the analysis program implemented.
+Currently AlignQC only has the `analysis` program implemented.
 
 ## Analysis
 `alignqc analysis`
