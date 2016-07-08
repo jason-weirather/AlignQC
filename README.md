@@ -63,13 +63,12 @@ Please note that analyzing very large hiseq datasets has not been tested and mem
 #### (optional) 2. Genome fasta file
 The reference genome these sequences were aligned to, in fasta format, can allows you to assess the error rates and error patterns in the alignments.
 
-If you choose not to use a reference genome you must explicitly specify --no_reference
+If you choose not to use a reference genome you must explicitly specify `--no_reference`
 
 #### (optional) 3. GenePred format annotation file
 Providing an annotation file provides context such as known transcripts, and exons, introns, and intergenic regions to help describe the data.  It is also necessary for rarefraction curves.
 
-If you choose not to use a reference annotation you must explicitly specify --no_annotation
-
+If you choose not to use a reference annotation you must explicitly specify `--no_annotation`
 http://www.healthcare.uiowa.edu/labs/au/IDP/IDP_gpd_format.asp
 
 The specific genepred format used here is "Gene Predictions and RefSeq Genes with Gene Names" genePred format described by UCSC.
