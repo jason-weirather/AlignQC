@@ -10,6 +10,13 @@ Ultimately this software should be suitable for assessing alignments of from a v
 - R
 - python 2.7+
 
+##### Fast start
+The following command should be sufficient for assessing a long read alignment.
+`alignqc analysis long_reads.bam -r ref_genome.fa -a ref_transcriptome.gpd -o long_reads.alignqc.xhtml`
+
+If you don't readily have your reference genome or reference annotation available you can try the following.
+`alignqc analysis long_reads.bam --no_reference --no_annotation -o long_reads.alignqc.xhtml`
+
 ## Analysis
 `alignqc analysis`
 
@@ -66,7 +73,7 @@ If you want to share the visual results with others we recommend the `--portable
 If accessing the embedded data in the xhtml is a problem, you can output the data in a folder format `--output_folder`, which can provide you more convenient access.
 
 
-#### Standard xhtml output
+#### (option 1) Standard xhtml output
 `-o` or `--output`
 
 The recommended output of this software is a single xhtml file that contains all the relevant files from the analysis embeded as base64 encoded URI data.  
@@ -75,12 +82,12 @@ This means you can click any of the links in the document and the browser will d
 
 Bed tracks compatible with the UCSC genome browser are also provided.
 
-#### Portable xhtml output
+#### (option 2) Portable xhtml output
 `--portable_output`
 
 This output is recommended if you want to email these results or share them over a bandwidth limited connection.  This format only has the png images and webpage text.  Links are disabled.
 
-#### Output folder
+#### (option 3) Output folder
 `--output_folder`
 
 Store an output folder that contains all the data and figures.  An xhtml file is still available in this folder.
