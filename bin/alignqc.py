@@ -24,7 +24,8 @@ def main():
 
 def do_inputs():
   # Setup command line inputs
-  parser=argparse.ArgumentParser(description="",formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+  global version
+  parser=argparse.ArgumentParser(description="Version "+str(version)+"\nReview reports about alignments.",formatter_class=argparse.ArgumentDefaultsHelpFormatter)
   parser.add_argument('mode',choices=['analyze','compare','combine'],help="MODE of program to run")
   args = parser.parse_args()
   return args
