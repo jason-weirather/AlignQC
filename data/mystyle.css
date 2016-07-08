@@ -1,0 +1,182 @@
+table {
+  border-collapse:collapse;
+}
+
+body {
+  font-family:Georgia;
+  margin:20px;
+}
+
+.result_block {
+  width: 850px;
+}
+
+.one_half {
+  width: 400px;
+  padding: 10px;
+}
+.one_half img {
+  max-width:400px;
+}
+
+.one_third {
+  width: 300px;
+  padding: 10px;
+}
+.one_third img {
+  width: 300px;
+}
+
+.two_thirds {
+  width: 450px;
+  padding: 10px;
+}
+.two_thirds img {
+  max-width:450px;
+}
+.full_length  {
+  width: 700px;
+  padding: 10px;
+}
+.full_length img {
+  max-width:700px;
+}
+
+
+.left {
+  float: left;
+}
+.right {
+  float: right;
+}
+
+.data_table {
+  margin-bottom: 10px;
+}
+
+.data_table td {
+  border: 1px solid black;
+  padding: 2px;
+}
+
+.subject_title {
+  font-size: 30px;
+}
+
+.subject_title .c1 {
+  padding-right:10px;
+  width:250px;
+}
+.subject_title .c2 {
+  padding:10px;
+}
+
+.subject_title .highlight {
+  font-style: italic;
+  font-size: 40px;
+}
+.subject_title .highlight2 {
+  font-size: 20px;
+}
+
+.top_block {
+  float:left;
+  padding-left:15px;
+  padding-right:15px;
+  max-width:800px;
+  width:auto;
+}
+
+.input_value {
+  font-family:"courier";
+  border: 1px solid black;
+  padding: 5px;
+  display:inline-block;
+}
+
+.clear {
+  clear: both;
+}
+
+.rhead {
+  background-color:rgb(255,251,208);
+  font-family:"arial";
+  font-style: bold;
+  text-align: center;
+  font-size: 20px;
+  border: 1px solid black;
+  padding:3px;
+}
+
+#unaligned_leg {
+  background-color:rgb(255,255,255);
+  border: 1px solid black;
+}
+.legend_square {
+  border: 1px solid black;
+  margin-left:5px;
+  height:10px;
+  width:10px;
+  margin-right:10px;
+}
+#gapped_leg {
+  background-color:rgb(255,0,0);
+}
+#single_leg {
+  background-color:rgb(119,119,119);
+}
+#chimeric_leg {
+  background-color:rgb(0,127,255);
+}
+#selfchimeric_leg {
+  background-color:rgb(85,26,139);
+}
+.horizontal_legend div {
+  float:left;
+}
+.horizontal_legend td {
+  width:60px;
+  vertical-align: text-top;
+}
+.exon_leg {
+  background-color:rgb(119,119,119);
+}
+.intron_leg {
+  background-color:rgb(255,219,88);
+}
+.intergenic_leg {
+  background-color:rgb(0,127,255);
+}
+.partial_leg {
+  background-color:rgb(119,119,119);
+}
+.full_leg {
+  background-color:rgb(255,0,0);
+}
+.unannotated_leg {
+  background-color:rgb(198,226,255);
+}
+.rareany_leg {
+  background-color:rgb(255,0,0);  
+}
+.rarefull_leg {
+  background-color:rgb(0,0,255);  
+}
+.genome_cov_leg {
+  background-color:rgb(119,119,119);
+}
+.exon_cov_leg {
+  background-color:rgba(255,0,0,0.63);  
+}
+.intron_cov_leg {
+  background-color:rgba(208,79,208,0.63);  
+}
+.intergenic_cov_leg {
+  background-color:rgba(0,0,255,0.63);  
+}
+.pacbio_aligned_leg {
+  background-color:rgb(119,119,119);  
+}
+.pacbio_unaligned_leg {
+  background-color:rgb(255,0,0);  
+}
