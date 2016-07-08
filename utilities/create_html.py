@@ -17,7 +17,7 @@ import make_solo_html
 # global
 g_version = None
 
-locale.setlocale(locale.LC_ALL,'en_US')
+locale.setlocale(locale.LC_ALL,'') #default locale
 
 def main(args):
 
