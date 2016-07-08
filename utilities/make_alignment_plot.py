@@ -11,7 +11,7 @@ def main(args):
 
   sys.stderr.write("making plot\n")
   for ofile in args.output:
-    cmd = 'Rscript '+udir +'/plot_gapped_alignment_statistics.r '+args.input +' '+ofile
+    cmd = args.rscript_path+' '+udir +'/plot_gapped_alignment_statistics.r '+args.input +' '+ofile
     sys.stderr.write(cmd+"\n")
     call(cmd.split())
 
@@ -98,6 +98,7 @@ def do_inputs():
   parser.add_argument('input',help="INPUT lengths.txt file")
   parser.add_argument('-o','--output',nargs='+',help="OUTPUT FILE can put multiple")
   parser.add_argument('--output_stats',help="Save some summary statistics")
+  parser.add_argument('--rscript_path',default='Rscript',help="Path of Rscript")
 
   # Temporary working directory step 1 of 3 - Definition
   group = parser.add_mutually_exclusive_group()

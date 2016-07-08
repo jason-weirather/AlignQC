@@ -27,7 +27,7 @@ def main(args):
   global g_version
   #Make sure rscript is installed
   try:
-    cmd = 'Rscript --version'
+    cmd = args.rscript_path+' --version'
     prscript = Popen(cmd.split(),stdout=PIPE,stderr=PIPE)
     rline = prscript.communicate()
     sys.stderr.write("Using Rscript version:\n")
@@ -126,16 +126,19 @@ def do_inputs():
   ### Params for alignment error plot
   label7 = parser.add_argument_group(title="Alignment error parameters")
   label7.add_argument('--alignment_error_scale',nargs=6,type=float,help="<ins_min> <ins_max> <mismatch_min> <mismatch_max> <del_min> <del_max>")
-  label7.add_argument('--alignment_error_max_length',type=int,default=1000000,help="The maximum number of alignment bases to calculate error from")
+  label7.add_argument('--alignment_error_max_length',type=int,default=200000,help="The maximum number of alignment bases to calculate error from")
   
   ### Params for context error plot
   label8 = parser.add_argument_group(title="Context error parameters")
   label8.add_argument('--context_error_scale',nargs=6,type=float,help="<ins_min> <ins_max> <mismatch_min> <mismatch_max> <del_min> <del_max>")
-  label8.add_argument('--context_error_stopping_point',type=int,default=10000,help="Sample at least this number of each context")
+  label8.add_argument('--context_error_stopping_point',type=int,default=1000,help="Sample at least this number of each context")
 
   ## Params for rarefraction plots
   label9 = parser.add_argument_group(title="Rarefraction plot parameters")
   label9.add_argument('--samples_per_xval',type=int,default=500)
+
+  label10 = parser.add_argument_group(title="Path parameters")
+  label10.add_argument('--rscript_path',default='Rscript',help="The location of the Rscript executable.  Default is installed in path")
 
   args = parser.parse_args()
   setup_tempdir(args)

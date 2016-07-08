@@ -24,8 +24,13 @@ def main(args):
   sys.stderr.write("Reading alignments\n")
   epf = ErrorProfileFactory()
   if args.random:
-    bf = BAMFile(args.input,reference=ref)
-    bf.read_index()
+    bf = None
+    if args.input_index:
+      bf = BAMFile(args.input,reference=ref,index_file=args.input_index)
+      bf.read_index(index_file=args.input_index)
+    else:
+      bf = BAMFile(args.input,reference=ref)
+      bf.read_index()
     if not bf.has_index():
       sys.stderr.write("Random access requires an index be set\n")
     z = 0
@@ -37,6 +42,7 @@ def main(args):
       #print rname
       coord = bf.index.get_longest_target_alignment_coords_by_name(rname)
       #print coord
+      if not coord: continue
       e = bf.fetch_by_coord(coord)
       if e.is_aligned():
         epf.add_alignment(e)
@@ -68,7 +74,7 @@ def main(args):
   epf.write_context_error_report(args.tempdir+'/err.txt',strand)  
 
   for ofile in args.output:
-    cmd = 'Rscript '+os.path.dirname(os.path.realpath(__file__))+'/plot_base_error_context.r '+args.tempdir+'/err.txt '+ofile+' '
+    cmd = args.rscript_path+' '+os.path.dirname(os.path.realpath(__file__))+'/plot_base_error_context.r '+args.tempdir+'/err.txt '+ofile+' '
     if args.scale:
       cmd += ' '.join([str(x) for x in args.scale])
     sys.stderr.write(cmd+"\n")
@@ -87,6 +93,7 @@ def do_inputs():
   # Setup command line inputs
   parser=argparse.ArgumentParser(description="",formatter_class=argparse.ArgumentDefaultsHelpFormatter)
   parser.add_argument('input',help="INPUT FILE or '-' for STDIN")
+  parser.add_argument('--input_index',help="Index file for bam if other than default location")
   parser.add_argument('-r','--reference',required=True,help="Reference Genome")
   parser.add_argument('-o','--output',nargs='+',required=True,help="OUTPUTFILE(s)")
   parser.add_argument('--output_raw',help="Save the raw data")
@@ -102,6 +109,7 @@ def do_inputs():
   group.add_argument('--tempdir',default=gettempdir(),help="The temporary directory is made and destroyed here.")
   group.add_argument('--specific_tempdir',help="This temporary directory will be used, but will remain after executing.")
   parser.add_argument('--random',action='store_true',help="Randomly select alignments, requires an indexed bam")
+  parser.add_argument('--rscript_path',default='Rscript',help="Path to Rscript")
   args = parser.parse_args()
   # Temporary working directory step 2 of 3 - Creation
   setup_tempdir(args)

@@ -125,10 +125,10 @@ def make_data_bam(args):
         do_pb = True
         break
   if do_pb:
-    cmd = 'Rscript '+udir+'/plot_pacbio.r '+args.tempdir+'/data/special_report.pacbio '+args.tempdir+'/plots/pacbio.png'
+    cmd = args.rscript_path+' '+udir+'/plot_pacbio.r '+args.tempdir+'/data/special_report.pacbio '+args.tempdir+'/plots/pacbio.png'
     sys.stderr.write(cmd+"\n")
     mycall(cmd,args.tempdir+'/logs/special_report_pacbio_png')
-    cmd = 'Rscript '+udir+'/plot_pacbio.r '+args.tempdir+'/data/special_report.pacbio '+args.tempdir+'/plots/pacbio.pdf'
+    cmd = args.rscript_path+' '+udir+'/plot_pacbio.r '+args.tempdir+'/data/special_report.pacbio '+args.tempdir+'/plots/pacbio.pdf'
     sys.stderr.write(cmd+"\n")
     mycall(cmd,args.tempdir+'/logs/special_report_pacbio_pdf')
 
@@ -170,7 +170,7 @@ def make_data_bam(args):
 
     sys.stderr.write("Make locus rarefraction plot\n")
     for ext in ['png','pdf']:
-      cmd = 'Rscript '+udir+'/plot_annotation_rarefractions.r '+\
+      cmd = args.rscript_path+' '+udir+'/plot_annotation_rarefractions.r '+\
                args.tempdir+'/plots/locus_rarefraction.'+ext+' '+\
                'locus'+' '+\
                args.tempdir+'/data/locus_rarefraction.txt '+\
@@ -181,6 +181,7 @@ def make_data_bam(args):
   # 7. Alignment plot preparation
   sys.stderr.write("Get ready for alignment plot\n")
   cmd = udir+'/make_alignment_plot.py '+args.tempdir+'/data/lengths.txt.gz '
+  cmd += ' --rscript_path '+args.rscript_path+' '
   cmd += ' --output_stats '+args.tempdir+'/data/alignment_stats.txt '
   cmd += ' --output '+args.tempdir+'/plots/alignments.png '
   cmd += args.tempdir+'/plots/alignments.pdf'
@@ -196,19 +197,19 @@ def make_data_bam(args):
 
   # do the depth graphs
   sys.stderr.write("Making coverage plots\n")
-  cmd = 'Rscript '+udir+'/plot_chr_depth.r  '+args.tempdir+'/data/line_plot_table.txt.gz '+args.tempdir+'/data/total_distro_table.txt.gz '+args.tempdir+'/data/chr_distro_table.txt.gz '+args.tempdir+'/plots/covgraph.png'
+  cmd = args.rscript_path+' '+udir+'/plot_chr_depth.r  '+args.tempdir+'/data/line_plot_table.txt.gz '+args.tempdir+'/data/total_distro_table.txt.gz '+args.tempdir+'/data/chr_distro_table.txt.gz '+args.tempdir+'/plots/covgraph.png'
   sys.stderr.write(cmd+"\n")
   mycall(cmd,args.tempdir+'/logs/covgraph_png')
-  cmd = 'Rscript '+udir+'/plot_chr_depth.r  '+args.tempdir+'/data/line_plot_table.txt.gz '+args.tempdir+'/data/total_distro_table.txt.gz '+args.tempdir+'/data/chr_distro_table.txt.gz '+args.tempdir+'/plots/covgraph.pdf'
+  cmd = args.rscript_path+' '+udir+'/plot_chr_depth.r  '+args.tempdir+'/data/line_plot_table.txt.gz '+args.tempdir+'/data/total_distro_table.txt.gz '+args.tempdir+'/data/chr_distro_table.txt.gz '+args.tempdir+'/plots/covgraph.pdf'
   sys.stderr.write(cmd+"\n")
   mycall(cmd,args.tempdir+'/logs/covgraph_pdf')
 
   # do depth plots
   sys.stderr.write("Making chr depth plots\n")
-  cmd = 'Rscript '+udir+'/plot_depthmap.r '+args.tempdir+'/data/depth.sorted.bed.gz '+args.tempdir+'/data/chrlens.txt '+args.tempdir+'/plots/perchrdepth.png'
+  cmd = args.rscript_path+' '+udir+'/plot_depthmap.r '+args.tempdir+'/data/depth.sorted.bed.gz '+args.tempdir+'/data/chrlens.txt '+args.tempdir+'/plots/perchrdepth.png'
   sys.stderr.write(cmd+"\n")
   mycall(cmd,args.tempdir+'/logs/perchr_depth_png')
-  cmd = 'Rscript '+udir+'/plot_depthmap.r '+args.tempdir+'/data/depth.sorted.bed.gz '+args.tempdir+'/data/chrlens.txt '+args.tempdir+'/plots/perchrdepth.pdf'
+  cmd = args.rscript_path+' '+udir+'/plot_depthmap.r '+args.tempdir+'/data/depth.sorted.bed.gz '+args.tempdir+'/data/chrlens.txt '+args.tempdir+'/plots/perchrdepth.pdf'
   sys.stderr.write(cmd+"\n")
   mycall(cmd,args.tempdir+'/logs/perchr_depth_pdf')
 
@@ -220,10 +221,10 @@ def make_data_bam(args):
   sys.stderr.write(cmd+"\n")
   gpd_to_exon_distro.external_cmd(cmd)
 
-  cmd = 'Rscript '+udir+'/plot_exon_distro.r '+args.tempdir+'/data/exon_size_distro.txt.gz '+args.tempdir+'/plots/exon_size_distro.png'
+  cmd = args.rscript_path+' '+udir+'/plot_exon_distro.r '+args.tempdir+'/data/exon_size_distro.txt.gz '+args.tempdir+'/plots/exon_size_distro.png'
   sys.stderr.write(cmd+"\n")
   mycall(cmd,args.tempdir+'/logs/exon_size_distro_png')
-  cmd = 'Rscript '+udir+'/plot_exon_distro.r '+args.tempdir+'/data/exon_size_distro.txt.gz '+args.tempdir+'/plots/exon_size_distro.pdf'
+  cmd = args.rscript_path+' '+udir+'/plot_exon_distro.r '+args.tempdir+'/data/exon_size_distro.txt.gz '+args.tempdir+'/plots/exon_size_distro.pdf'
   sys.stderr.write(cmd+"\n")
   mycall(cmd,args.tempdir+'/logs/exon_size_distro_pdf')
 
@@ -268,22 +269,34 @@ def make_data_bam_reference(args):
   # make the context error plots
   udir = os.path.dirname(os.path.realpath(__file__))
 
+  # Find the index file that was generated earlier.
+  indfile = None
+  if os.path.exists(args.tempdir+'/temp/myindex.bgi'):
+    indfile = args.tempdir+'/temp/myindex.bgi'
+
   # 1. Context error
   cmd = udir+'/bam_to_context_error_plot.py '+args.input+' -r '+args.reference+' --target --output_raw '+args.tempdir+'/data/context_error_data.txt -o '+args.tempdir+'/plots/context_plot.png '+args.tempdir+'/plots/context_plot.pdf'
+  cmd += ' --rscript_path '+args.rscript_path+' '
+  cmd += ' --random '
   if args.context_error_scale:
     cmd += ' --scale '+' '.join([str(x) for x in args.context_error_scale])
   if args.context_error_stopping_point:
     cmd += ' --stopping_point '+str(args.context_error_stopping_point)
+  if indfile:
+    cmd += ' --input_index '+indfile+' '
   sys.stderr.write("Making context plot\n")
   sys.stderr.write(cmd+"\n")
   bam_to_context_error_plot.external_cmd(cmd)
 
   # 2. Alignment overall error
   cmd = udir+'/bam_to_alignment_error_plot.py '+args.input+' -r '+args.reference+' --output_stats '+args.tempdir+'/data/error_stats.txt --output_raw '+args.tempdir+'/data/error_data.txt -o '+args.tempdir+'/plots/alignment_error_plot.png '+args.tempdir+'/plots/alignment_error_plot.pdf'
+  cmd += ' --rscript_path '+args.rscript_path+' '
   if args.alignment_error_scale:
     cmd += ' --scale '+' '.join([str(x) for x in args.alignment_error_scale])
   if args.alignment_error_max_length:
     cmd += ' --max_length '+str(args.alignment_error_max_length)
+  if indfile:
+    cmd += ' --input_index '+indfile+' '
   sys.stderr.write("Making alignment error plot\n")
   sys.stderr.write(cmd+"\n")
   bam_to_alignment_error_plot.external_cmd(cmd)
@@ -323,7 +336,7 @@ def make_data_bam_annotation(args):
   get_depth_subset.external_cmd(cmd)
 
   # 3. Plot the feature depth
-  cmd = 'Rscript '+udir+'/plot_feature_depth.r '
+  cmd = args.rscript_path+' '+udir+'/plot_feature_depth.r '
   cmd += args.tempdir+'/data/depth.sorted.bed.gz '
   cmd += args.tempdir+'/data/exondepth.bed.gz '
   cmd += args.tempdir+'/data/introndepth.bed.gz '
@@ -332,7 +345,7 @@ def make_data_bam_annotation(args):
   sys.stderr.write(cmd+"\n")
   mycall(cmd,args.tempdir+'/logs/featuredepth_png')  
 
-  cmd = 'Rscript '+udir+'/plot_feature_depth.r '
+  cmd = args.rscript_path+' '+udir+'/plot_feature_depth.r '
   cmd += args.tempdir+'/data/depth.sorted.bed.gz '
   cmd += args.tempdir+'/data/exondepth.bed.gz '
   cmd += args.tempdir+'/data/introndepth.bed.gz '
@@ -343,13 +356,13 @@ def make_data_bam_annotation(args):
 
   # 4. Generate plots from reads assigend to features
   sys.stderr.write("Plot read assignment to genomic features\n")
-  cmd = 'Rscript '+udir+'/plot_annotated_features.r '
+  cmd = args.rscript_path+' '+udir+'/plot_annotated_features.r '
   cmd += args.tempdir+'/data/read_genomic_features.txt.gz '
   cmd += args.tempdir+'/plots/read_genomic_features.png'
   sys.stderr.write(cmd+"\n")
   mycall(cmd,args.tempdir+'/logs/read_genomic_features_png')  
 
-  cmd = 'Rscript '+udir+'/plot_annotated_features.r '
+  cmd = args.rscript_path+' '+udir+'/plot_annotated_features.r '
   cmd += args.tempdir+'/data/read_genomic_features.txt.gz '
   cmd += args.tempdir+'/plots/read_genomic_features.pdf'
   sys.stderr.write(cmd+"\n")
@@ -365,14 +378,14 @@ def make_data_bam_annotation(args):
 
   # 6. Make plots of the transcript lengths
   sys.stderr.write("Make plots from transcript lengths\n")
-  cmd = 'Rscript '+udir+'/plot_transcript_lengths.r '
+  cmd = args.rscript_path+' '+udir+'/plot_transcript_lengths.r '
   cmd += args.tempdir+'/data/annotbest.txt.gz '
   cmd += args.tempdir+'/plots/transcript_distro.png'
   sys.stderr.write(cmd+"\n")
   mycall(cmd,args.tempdir+'/logs/transcript_distro_png')  
   
   sys.stderr.write("Make plots from transcript lengths\n")
-  cmd = 'Rscript '+udir+'/plot_transcript_lengths.r '
+  cmd = args.rscript_path+' '+udir+'/plot_transcript_lengths.r '
   cmd += args.tempdir+'/data/annotbest.txt.gz '
   cmd += args.tempdir+'/plots/transcript_distro.pdf'
   sys.stderr.write(cmd+"\n")
@@ -389,13 +402,13 @@ def make_data_bam_annotation(args):
   annotated_length_analysis.external_cmd(cmd)
 
   # 8. Plot length distributions
-  cmd = 'Rscript '+udir+'/plot_annotation_analysis.r '
+  cmd = args.rscript_path+' '+udir+'/plot_annotation_analysis.r '
   cmd += args.tempdir+'/data/annot_lengths.txt.gz '
   cmd += args.tempdir+'/plots/annot_lengths.png'
   sys.stderr.write(cmd+"\n")
   mycall(cmd,args.tempdir+'/logs/annot_lengths_png')  
 
-  cmd = 'Rscript '+udir+'/plot_annotation_analysis.r '
+  cmd = args.rscript_path+' '+udir+'/plot_annotation_analysis.r '
   cmd += args.tempdir+'/data/annot_lengths.txt.gz '
   cmd += args.tempdir+'/plots/annot_lengths.pdf'
   sys.stderr.write(cmd+"\n")
@@ -445,7 +458,7 @@ def make_data_bam_annotation(args):
   # 10. Plot the rarefraction curves
   for type in ['gene','transcript']:
     for ext in ['png','pdf']:
-      cmd = 'Rscript '+udir+'/plot_annotation_rarefractions.r '+\
+      cmd = args.rscript_path+' '+udir+'/plot_annotation_rarefractions.r '+\
              args.tempdir+'/plots/'+type+'_rarefraction.'+ext+' '+\
              type+' '+\
              args.tempdir+'/data/'+type+'_rarefraction.txt '+\
@@ -466,12 +479,12 @@ def make_data_bam_annotation(args):
   annotated_read_bias_analysis.external_cmd(cmd)
 
   # 12. Plot bias
-  cmd = 'Rscript '+udir+'/plot_bias.r '+args.tempdir+'/data/bias_table.txt.gz '+\
+  cmd = args.rscript_path+' '+udir+'/plot_bias.r '+args.tempdir+'/data/bias_table.txt.gz '+\
         args.tempdir+'/plots/bias.png'
   sys.stderr.write(cmd+"\n")
   mycall(cmd,args.tempdir+'/logs/bias_png.log')
 
-  cmd = 'Rscript '+udir+'/plot_bias.r '+args.tempdir+'/data/bias_table.txt.gz '+\
+  cmd = args.rscript_path+' '+udir+'/plot_bias.r '+args.tempdir+'/data/bias_table.txt.gz '+\
         args.tempdir+'/plots/bias.pdf'
   sys.stderr.write(cmd+"\n")
   mycall(cmd,args.tempdir+'/logs/bias_pdf.log')

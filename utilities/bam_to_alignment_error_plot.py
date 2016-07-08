@@ -20,7 +20,13 @@ def main(args):
   sys.stderr.write("Reading our reference Fasta\n")
   ref = FastaData(open(args.reference,'rb').read())
   sys.stderr.write("Finished reading our reference Fasta\n")
-  bf = BAMFile(args.input,reference=ref)
+  bf = None
+  if args.input_index:
+    bf = BAMFile(args.input,reference=ref,index_file=args.input_index)
+    bf.read_index(index_file=args.input_index)
+  else:
+    bf = BAMFile(args.input,reference=ref)
+    bf.read_index()
   epf = ErrorProfileFactory()
   if args.random:
     if not bf.has_index():
@@ -30,6 +36,7 @@ def main(args):
     while True:
       rname = random.choice(bf.index.get_names())
       coord = bf.index.get_longest_target_alignment_coords_by_name(rname)
+      if not coord: continue
       e = bf.fetch_by_coord(coord)
       if e.is_aligned():
         epf.add_alignment(e)
@@ -57,7 +64,7 @@ def main(args):
   of.close()
 
   for ofile in args.output:
-    cmd = 'Rscript '+os.path.dirname(os.path.realpath(__file__))+'/plot_alignment_errors.r '+args.tempdir+'/report.txt '+ofile+' '
+    cmd = args.rscript_path+' '+os.path.dirname(os.path.realpath(__file__))+'/plot_alignment_errors.r '+args.tempdir+'/report.txt '+ofile+' '
     if args.scale:
       cmd += ' '.join([str(x) for x in args.scale])
     sys.stderr.write(cmd+"\n")
@@ -83,6 +90,7 @@ def do_inputs():
   # Setup command line inputs
   parser=argparse.ArgumentParser(description="",formatter_class=argparse.ArgumentDefaultsHelpFormatter)
   parser.add_argument('input',help="BAMFILE input")
+  parser.add_argument('--input_index',help="BAMFILE index")
   parser.add_argument('-r','--reference',help="Fasta reference file",required=True)
   parser.add_argument('--scale',type=float,nargs=6,help="<ins_min> <ins_max> <mismatch_min> <mismatch_max> <del_min> <del_max>")
   parser.add_argument('-o','--output',nargs='+',help="OUTPUTFILE for pdf plot",required=True)
@@ -94,6 +102,7 @@ def do_inputs():
   group = parser.add_mutually_exclusive_group()
   group.add_argument('--tempdir',default=gettempdir(),help="The temporary directory is made and destroyed here.")
   group.add_argument('--specific_tempdir',help="This temporary directory will be used, but will remain after executing.")
+  parser.add_argument('--rscript_path',default='Rscript',help="Rscript path")
   args = parser.parse_args()
 
   # Temporary working directory step 2 of 3 - Creation
