@@ -17,11 +17,9 @@ Ultimately this software should be suitable for assessing alignments of from a v
 
 You can add the `AlignQC/bin` directory to your path if you want to call `alignqc` directly from the command line.
 
-If you require a path for python 2.7+ other than `python`, or a shell other than `/bin/sh` you can modify `AlignQC/bin/alignqc` to reflect this.
+If you require a path for python 2.7+ other than `/usr/bin/python`, you can modify `AlignQC/bin/alignqc` to reflect this.
 
-If you prefer to run AlignQC directly from python you can use `AlignQC/bin/alignqc.py`
-
-i.e., `python AlignQC/bin/alignqc.py`
+If you prefer to invoke AlignQC directly from python you can, i.e., `python AlignQC/bin/alignqc`
 
 By default `Rscript` should be installed in your path, if it is not, you can specify a location during the `analysis` command with the `--rscript_path` option.
 
