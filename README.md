@@ -4,6 +4,9 @@ Generate a report on sequencing alignments to understand read alignments vs read
 Ultimately this software should be suitable for assessing alignments of from a variety of sequencing platforms and a variety of sequence types.  The focus for the first version of this software is on the transcriptome analysis of third generation sequencing data outputs.
 
 ## Analysis
+`alignqc analysis`
+The analysis command is the most basic command for assessing an alignment.  It provides reports and plots in xhtml format.
+
 ### Inputs
 ### 1. BAM format alignment file
 The preferred format for transcriptome analysis is GMAP output (the 'samse') format.  Default output, or an output that can produce multiple alignment paths for a read is recommended if you want the ability to assess chimeric reads.
