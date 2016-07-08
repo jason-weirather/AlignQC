@@ -13,6 +13,18 @@ Ultimately this software should be suitable for assessing alignments of from a v
 ##### Report Viewing Requirements
 - Mozilla Firefox or Google Chrome Browser
 
+##### Installation (optional)
+
+You can add the `AlignQC/bin` directory to your path if you want to call `alignqc` directly from the command line.
+
+If you require a path for python 2.7+ other than `python`, or a shell other than `/bin/sh` you can set modify `AlignQC/bin/alignqc` to reflect this.
+
+If you prefer to run AlignQC directly from python you can use `AlignQC/bin/alignqc.py`
+
+i.e., `python AlignQC/bin/alignqc.py`
+
+By default `Rscript` should be installed in the path, if it is not, you can specify a location in the `analysis` command with the `--rscript_path` option.
+
 ##### Fast start
 The following command should be sufficient for assessing a long read alignment.
 
@@ -23,7 +35,7 @@ If you don't readily have your reference genome or reference annotation availabl
 `alignqc analysis long_reads.bam --no_reference --no_annotation -o long_reads.alignqc.xhtml`
 
 ## AlignQC programs
-Currently AlignQC only has the `analysis` program implemented.
+Currently AlignQC only offers the `analysis` program.
 
 ## Analysis
 `alignqc analysis`
