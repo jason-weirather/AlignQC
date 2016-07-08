@@ -12,10 +12,15 @@ Ultimately this software should be suitable for assessing alignments of from a v
 
 ##### Fast start
 The following command should be sufficient for assessing a long read alignment.
+
 `alignqc analysis long_reads.bam -r ref_genome.fa -a ref_transcriptome.gpd -o long_reads.alignqc.xhtml`
 
 If you don't readily have your reference genome or reference annotation available you can try the following.
+
 `alignqc analysis long_reads.bam --no_reference --no_annotation -o long_reads.alignqc.xhtml`
+
+## AlignQC programs
+Currently AlignQC only has the analysis program implemented.
 
 ## Analysis
 `alignqc analysis`
@@ -23,6 +28,12 @@ If you don't readily have your reference genome or reference annotation availabl
 The analysis command is the most basic command for assessing an alignment.  It provides reports and plots in xhtml format.
 
 ### Inputs
+A complete list of optional commands for each sub command is available with the `-h` option.
+
+`alignqc analysis -h` 
+
+Will report all analysis required and optional inputs.
+
 #### 1. BAM format alignment file
 The preferred format for transcriptome analysis is GMAP output (the 'samse') format.  Default output, or an output that can produce multiple alignment paths for a read is recommended if you want the ability to assess chimeric reads.
 
