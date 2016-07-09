@@ -10,7 +10,7 @@ if cmd_subfolder not in sys.path:
 # Import our main launchers for each mode
 import analyze
 
-version = 1.0
+version = 1.1
 
 def main():
   operable_argv = [sys.argv[0]]+sys.argv[2:]
