@@ -16,7 +16,8 @@ from Bio.Stream import LocusStream
 from Bio.Range import ranges_to_coverage, GenomicRange
 
 #bring in the folder to the path for our utilities
-pythonfolder_loc = "../pyutil"
+#pythonfolder_loc = "../pyutil"
+pythonfolder_loc = "../../Au-public/iron/utilities"
 cmd_subfolder = os.path.realpath(os.path.abspath(os.path.join(os.path.split(inspect.getfile(inspect.currentframe() ))[0],pythonfolder_loc)))
 if cmd_subfolder not in sys.path:
   sys.path.insert(0,cmd_subfolder)
