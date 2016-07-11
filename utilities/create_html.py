@@ -255,7 +255,7 @@ def make_html(args):
   <div class="top_block">
     <div>Execution parmeters:</div>
     <div class="input_value">
-    <a href="data/params.txt">params.txt</a>
+    <a id="params.txt" href="data/params.txt">params.txt</a>
     </div>
   </div>
   <div class="top_block">
@@ -512,7 +512,7 @@ def make_html(args):
 
   ### For Coverage we can do part of it without annotations
   ostr = '''
-<div class="subject_title">Coverage analysis &nbsp;&nbsp;&nbsp;&nbsp;<span class="highlight">'''
+<div class="subject_title">Coverage analysis &#xA0;&#xA0;&#xA0;&#xA0;<span class="highlight">'''
   of.write(ostr+"\n")
   of.write(perc(coverage_data['genome_covered'],coverage_data['genome_total'],2)+"\n")
   ostr = '''
@@ -678,7 +678,7 @@ def make_html(args):
   # We need a reference in order to do error pattern analysis
   if args.reference:
     ostr = '''
-<div class="subject_title">Error pattern analysis &nbsp;&nbsp;&nbsp;&nbsp;<span class="highlight">
+<div class="subject_title">Error pattern analysis &#xA0;&#xA0;&#xA0;&#xA0;<span class="highlight">
 '''
     #if args.reference
     of.write(ostr+"\n")
@@ -686,7 +686,7 @@ def make_html(args):
     of.write(error_rate)
     ostr='''
   </span> <span class="highlight2">error rate</span></div>
-<div class="subject_subtitle">&nbsp; &nbsp; &nbsp; based on aligned segments</div>
+<div class="subject_subtitle">&#xA0; &#xA0; &#xA0; based on aligned segments</div>
 <div class="result_block">
   <div class="full_length right">
     <div class="rhead">Error rates, given a target sequence [<a download="context_plot.pdf" href="plots/context_plot.pdf">pdf</a>]</div>
@@ -772,7 +772,7 @@ def make_html(args):
   <tr><td class="rhead" colspan="2">Raw data</td></tr>
   <tr>
     <td>Alignments stats raw report:</td>
-    <td class="raw_files"><a href="data/alignment_stats.txt">alignment_stats.txt</a></td>
+    <td class="raw_files"><a id="alignment_stats.txt" href="data/alignment_stats.txt">alignment_stats.txt</a></td>
   </tr>
   <tr>
     <td>Read lengths:</td>
@@ -780,7 +780,7 @@ def make_html(args):
   </tr>
   <tr>
     <td>Reference sequence lengths:</td>
-    <td class="raw_files"><a href="data/chrlens.txt">chrlens.txt</a></td>
+    <td class="raw_files"><a id="chrlens.txt" href="data/chrlens.txt">chrlens.txt</a></td>
   </tr>
   <tr>
     <td>Coverage bed:</td>

@@ -9,8 +9,9 @@ if cmd_subfolder not in sys.path:
 
 # Import our main launchers for each mode
 import analyze
+import dump
 
-version = 1.1
+version = '1.1dev'
 
 def main():
   operable_argv = [sys.argv[0]]+sys.argv[2:]
@@ -19,6 +20,8 @@ def main():
   args = do_inputs()
   if args.mode == 'analyze':
     analyze.external_cmd(" ".join(operable_argv),version=version)
+  if args.mode == 'dump':
+    dump.external_cmd(" ".join(operable_argv),version=version)
   else:
     sys.stderr.write("Run mode not yet implemented\n")
 
@@ -26,7 +29,7 @@ def do_inputs():
   # Setup command line inputs
   global version
   parser=argparse.ArgumentParser(description="Version "+str(version)+"\nReview reports about alignments.",formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-  parser.add_argument('mode',choices=['analyze','compare','combine'],help="MODE of program to run")
+  parser.add_argument('mode',choices=['analyze','dump','compare','combine'],help="MODE of program to run")
   args = parser.parse_args()
   return args
 
