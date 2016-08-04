@@ -360,12 +360,12 @@ def make_html(args):
           <tr><td>Single alignment</td><td><div id="single_leg" class="legend_square"></div></td></tr>
     </table>
   </div>
-  <div class="two_thirds left">
+  <div class="two_thirds right">
     <div class="rhead">Summary [<a download="alignments.pdf" href="plots/alignments.pdf">pdf</a>]</div>
     <img src="plots/alignments.png" alt="alignments_png" />
   </div>   
   <div class="clear"></div>
-  <div class="one_half right">
+  <div class="two_thirds right">
     <div class="rhead">Exon counts of best alignments [<a download="exon_size_distro.pdf" href="plots/exon_size_distro.pdf">pdf</a>]</div>
     <img src="plots/exon_size_distro.png" alt="exon_size_distro_png" />
   </div>
