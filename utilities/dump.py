@@ -1,20 +1,24 @@
 #!/usr/bin/python
-import argparse, sys, os, xml.etree.ElementTree, re, base64, zlib, gzip, StringIO
+import argparse, sys, os, re, base64, zlib, gzip, StringIO
 from shutil import rmtree
 from multiprocessing import cpu_count
 from tempfile import mkdtemp, gettempdir
+from xml.etree import ElementTree
 
 from Bio.Format.Bed import Bed12
 
 g_version = None
 
+def fixtag(ns, tag, nsmap):
+  return '{'+nsmap[ns]+'}'+tag
+
 def main(args):
   of = sys.stdout
   if args.output != '-':
     of = open(args.output,'w')
-
-  tree = xml.etree.ElementTree.parse(args.xhtml_input)
   names = {}
+  tree = ElementTree.parse(args.xhtml_input)
+  sys.stderr.write("Traversing xhtml\n")
   for v in [x for x in tree.iter() if x.tag=='{http://www.w3.org/1999/xhtml}a']:
     data = v.attrib
     name = None
@@ -36,6 +40,7 @@ def main(args):
       continue
     v = base64.b64decode(m.group(1))
     names[name] = v
+  sys.stderr.write("Finished traversing xhtml\n")
   if args.list:
     for name in sorted(names.keys()):
       newname = name
