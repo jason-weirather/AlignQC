@@ -13,7 +13,7 @@ make_image<-function(d,outfile,input_width,text_adjust) {
   }
 
   pcol = '#777777'
-  fcol = '#4DAF4A'
+  fcol = '#7FC97F'
   ucol = '#FDC086'
 
   recwid = input_width
@@ -36,7 +36,7 @@ make_image<-function(d,outfile,input_width,text_adjust) {
   rect(0,0,500,partial,col=pcol,lwd=recwid)
   rect(0,partial,500,full+partial,col=fcol,lwd=recwid)
   rect(0,full+partial,500,full+partial+unannot,col=ucol,lwd=recwid)
-  mtext("All reads",side=1,at=-100,adj=0,line=1,cex=axcex*0.67)
+  mtext("All",side=1,at=-100,adj=0,line=1,cex=axcex*0.67)
 
   # Do by length
   #find biggest
