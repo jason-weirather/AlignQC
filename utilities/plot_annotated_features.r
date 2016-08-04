@@ -64,7 +64,7 @@ make_image<-function(d,outfile,input_width,text_adjust) {
   intron = length(d[d[,2]=="intron" & d[,4]>longest,1])
   intergenic = length(d[d[,2]=="intergenic" & d[,4]>longest,1])
   tot = exon+intron+intergenic
-  plot(1,type="n",xlim=c(-50,500),ylim=c(0,tot*1.1),ylab="",bty="n",xlab="",xaxt='n',yaxt="n",cex.lab=axcex)
+  plot(1,type="n",xlim=c(-50,500),ylim=c(0,tot*1.1),ylab="",bty="n",xlab="",xaxt='n',yaxt="n",cex.lab=axcex,yaxs="i")
   axis(2,lwd=recwid,cex.axis=axcex)
   rect(0,0,500,exon,col="#777777",lwd=recwid)
   rect(0,exon,500,exon+intron,col="#FFDB58",lwd=recwid)
