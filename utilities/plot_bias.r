@@ -15,7 +15,13 @@ if(filex=="pdf") {
     stop("Unsupported type for output file.\n",call.=FALSE)
 }
 
-d<-read.table(gzfile(args[1]),row.names=1)
+filex = substr(args[1],nchar(args[1])-1,nchar(args[1]))
+if(filex=='gz') {
+  d<-read.table(gzfile(args[1]),row.names=1)
+} else {
+  d<-read.table(args[1],row.names=1)
+}
+#,row.names=1)
 par(mar=c(5,5,1,1))
-boxplot(t(as.matrix(d)),outline=FALSE,xlab="Position on covered portion of reference 5'-3' (%)",ylab="Fraction of transcripts covered",lty=1,boxwex=0.75,whiskcol="#77777733",col="#FFDB58",cex.axis=1.5,cex.lab=1.5,whisklwd=2,boxlwd=1,boxcol="#000000AA")
+boxplot(as.matrix(d),outline=FALSE,xlab="Position on covered portion of reference 5'-3' (%)",ylab="Fraction of transcripts covered",lty=1,boxwex=0.75,whiskcol="#77777733",col="#FFDB58",cex.axis=1.5,cex.lab=1.5,whisklwd=2,boxlwd=1,boxcol="#000000AA")
 dev.off()

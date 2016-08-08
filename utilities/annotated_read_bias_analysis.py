@@ -75,30 +75,37 @@ def main(args):
   for i in range(1,101):
     results[str(i)] = []
   read_total = 0
+  outs = {}
   for tx_line in originals:
     ref_gpd = refgpd[tx_line]
     annots = reflocs[tx_line]
     reads = originals[tx_line].values()
     v = do_tx_line(ref_gpd,annots,reads,args)
     if not v: continue
+    tname = ref_gpd.get_transcript_name()
+    bins = sorted([int(x) for x in v[0].keys()])
+    outs[tname] = [0 for x in range(1,101)]
     read_total+=v[1]
     for i in range(1,101):
       if str(i) in v[0]:
         results[str(i)].append(v[0][str(i)])
-      else:
-        results[str(i)].append(0)
+        outs[tname][i-1] = v[0][str(i)]
+      #else:
+      #  results[str(i)].append(0)
   of = sys.stdout
   if args.output and re.search('\.gz',args.output):
     of = gzip.open(args.output,'w')
   elif args.output:
     of = open(args.output,'w')
-  tot = 0
-  for i in range(1,101):
-    ostr = str(i)
-    tot = len(results[str(i)])
-    for j in results[str(i)]:
-      ostr += "\t"+str(j)
-    of.write(ostr+"\n")
+  tot = len(outs.keys())
+  #for i in range(1,101):
+  #  ostr = str(i)
+  #  tot = len(results[str(i)])
+  #  for j in results[str(i)]:
+  #    ostr += "\t"+str(j)
+  #  of.write(ostr+"\n")
+  for tname in outs:
+    of.write(tname+"\t"+"\t".join([str(x) for x in outs[tname]])+"\n")
   of.close()
   if args.output_counts:
     of = open(args.output_counts,'w')
