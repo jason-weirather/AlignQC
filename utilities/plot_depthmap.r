@@ -52,24 +52,10 @@ for (i in 1:length(ordered_names)) {
 }
 e<-read.table(gzfile(args[1]))
 f<-e[order(e[,4]),]
-#g = unique(sort(e[,4]))
 colfunc<-colorRampPalette(c("#00000088","#0000FF88","#FF000088"))
-#colfunc<-colorRampPalette(c("#FF000088","#0000FF88","#00000088"))
-#colfunc<-colorRampPalette(c("#000000","#000033","#000066","#000099","#0000CC","#0000FF11","#FFCC00AA","#FF0000"))
 colarray<-colfunc(length(dstrata[,1]))
-#print(colarray)
-#alldep = sort(rep(f[,3]-f[,2],f[,4]))
-#colong = colfunc(length(rep(f[,3]-f[,2],f[,4])))
-#gcol = vector(length=length(g))
-#for(i in 1:length(g)) {
-#  dind = match(g[i],alldep)
-#  gcol[i] = colong[dind]
-#  print(gcol)
-#}
 cind = i
-#print(colarray)
 for(i in 1:length(f[,1])) {
-#for(i in 1:25000) {
   cind = match(f[i,1],ordered_names)
   clen = ordered_lens[cind]
   #print(f[i,4])
@@ -83,29 +69,5 @@ mindepth = min(dstrata[1,])
 maxdepth = max(dstrata[1,])
 z = 0
 step = 1/length(f[,4])
-#print(dstrata[,1])
 legend(-1,1,legend=dstrata[,1],fill=rev(colarray),xpd=TRUE,bty='n')
-#rect(1-0.4,0,1+0.4,1)
-#mult = 100
-#for(i in seq(1,length(f[,4]),mult)) {
-#  rect(1-0.4,z,1+0.4,z+step,col=gcol[i],border=gcol[f[i,4]])
-#  z = step*mult + z
-#}
-#ylabs = vector(length=length(g))
-#yval = vector(length=length(g))
-#for(i in 1:length(f[,4])) {
-#  gi = match(f[i,4],g,1)
-#  ylabs[gi] = f[i,4]
-#  yval[gi] = i/length(f[,4])
-#}
-#prev = 0
-#for(i in 1:length(ylabs)) {
-#  if(yval[i]>prev+0.1 & yval[i]<0.95) {
-#    mtext(ylabs[i],side=4,at=yval[i])
-#    prev = yval[i]
-#  }
-#}
-#mtext(max(ylabs),side=4,at=1)
-curr = 1
-#axis(4,at=yval,labels=ylabs)
 dev.off()
