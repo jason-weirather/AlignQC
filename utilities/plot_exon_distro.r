@@ -5,7 +5,7 @@ make_image<-function(d,outfile,input_width,text_adjust) {
   # decide output type
   filex = substr(outfile,nchar(outfile)-2,nchar(outfile))
   if(filex=="pdf") {
-    pdf(outfile,bg="#FFFFFF")
+    pdf(outfile,bg="#FFFFFF",height=4.5,width=7)
   } else if (filex=="png") {
     png(outfile,bg="#FFFFFF",width=480,height=240)
   } else {

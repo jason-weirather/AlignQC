@@ -799,6 +799,14 @@ def make_html(args):
     <td class="raw_files"><a download="annotbest.txt.gz" href="data/annotbest.txt.gz">annotbest.txt.gz</a></td>
   </tr>
   <tr>
+    <td>Read genomic features:</td>
+    <td class="raw_files"><a download="read_genomic_features.txt.gz" href="data/read_genomic_features.txt.gz">read_genomic_features.txt.gz</a></td>
+  </tr>
+  <tr>
+    <td>Annotation status and read lengths:</td>
+    <td class="raw_files"><a download="annot_lengths.txt.gz" href="data/annot_lengths.txt.gz">annot_lengths.txt.gz</a></td>
+  </tr>
+  <tr>
     <td>Gene any match rarefraction:</td>
     <td class="raw_files"><a download="gene_rarefraction.txt" href="data/gene_rarefraction.txt">gene_rarefraction.txt</a></td>
   </tr>
@@ -831,7 +839,7 @@ def make_html(args):
   </tr>
   <tr>
     <td>Alignment error report:</td>
-    <td class="raw_files"><a href="data/error_stats.txt">error_stats.txt</a></td>
+    <td class="raw_files"><a download="error_stats.txt" href="data/error_stats.txt">error_stats.txt</a></td>
   </tr>
   <tr>
     <td>Contextual errors data:</td>

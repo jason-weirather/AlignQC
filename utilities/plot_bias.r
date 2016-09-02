@@ -8,7 +8,7 @@ if(length(args)<2) {
 # decide output type
 filex = substr(args[2],nchar(args[2])-2,nchar(args[2]))
 if(filex=="pdf") {
-  pdf(args[2],bg="#FFFFFF",width=10,height=5)
+  pdf(args[2],bg="#FFFFFF",width=7,height=4)
 } else if (filex=="png") {
   png(args[2],bg="#FFFFFF",width=800,height=400)
 } else {
@@ -21,7 +21,14 @@ if(filex=='gz') {
 } else {
   d<-read.table(args[1],row.names=1)
 }
-#,row.names=1)
+myboxcol = '#FFDB58'
+if(length(args)>2) {
+  myboxcol = args[3]
+}
 par(mar=c(5,5,1,1))
-boxplot(as.matrix(d),outline=FALSE,xlab="Position on covered portion of reference 5'-3' (%)",ylab="Fraction of transcripts covered",lty=1,boxwex=0.75,whiskcol="#77777733",col="#FFDB58",cex.axis=1.5,cex.lab=1.5,whisklwd=2,boxlwd=1,boxcol="#000000AA")
+axcex = 1.75
+recwid = 3
+boxplot(as.matrix(d),outline=FALSE,xlab="Position on Reference (5' to 3' %)",ylab="Coverage",lty=1,boxwex=1,staplecol="#77777788",whiskcol="#77777788",col=myboxcol,cex.axis=axcex,cex.lab=axcex,whisklwd=2,staplelwd=3,boxlwd=1,boxcol="#000000AA",names=seq(1,100,1),frame=FALSE,axes=FALSE)
+axis(1,cex.axis=axcex,lwd=recwid)
+axis(2,cex.axis=axcex,lwd=recwid)
 dev.off()

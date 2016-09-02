@@ -1,4 +1,6 @@
 #!/usr/bin/python
+# This script will call most of the individual modules analyzing the data
+
 import argparse, sys, os, time, re, gzip, locale, inspect
 from subprocess import Popen, PIPE
 
@@ -33,7 +35,10 @@ if cmd_subfolder not in sys.path:
 
 # BAM
 import gpd_to_bed_depth
+
 import genepred_to_bed
+
+import bed_depth_to_stratified_coverage
 
 # BAM + annotation
 import  gpd_annotate
@@ -139,7 +144,12 @@ def make_data_bam(args):
   sys.stderr.write("Generate the depth bed for the mapped reads\n")
   sys.stderr.write(cmd+"\n")
   gpd_to_bed_depth.external_cmd(cmd)
-
+  sys.stderr.write("Stratify the death to make it plot quicker and cleaner\n")
+  cmd = "bed_depth_to_stratified_coverage.py "+args.tempdir+'/data/depth.sorted.bed.gz'
+  cmd += ' -l '+args.tempdir+"/data/chrlens.txt -o "+args.tempdir+'/temp/depth.coverage-strata.sorted.bed.gz'
+  cmd += ' --output_key '+args.tempdir+'/temp/coverage-strata.key'
+  cmd += ' --minimum_coverage 100000'
+  bed_depth_to_stratified_coverage.external_cmd(cmd) 
   global rcnt #read count
   rcnt = 0
   tinf = gzip.open(args.tempdir+'/data/lengths.txt.gz')
@@ -207,10 +217,10 @@ def make_data_bam(args):
 
   # do depth plots
   sys.stderr.write("Making chr depth plots\n")
-  cmd = args.rscript_path+' '+udir+'/plot_depthmap.r '+args.tempdir+'/data/depth.sorted.bed.gz '+args.tempdir+'/data/chrlens.txt '+args.tempdir+'/plots/perchrdepth.png'
+  cmd = args.rscript_path+' '+udir+'/plot_depthmap.r '+args.tempdir+'/temp/depth.coverage-strata.sorted.bed.gz '+args.tempdir+'/data/chrlens.txt '+args.tempdir+'/temp/coverage-strata.key '+args.tempdir+'/plots/perchrdepth.png'
   sys.stderr.write(cmd+"\n")
   mycall(cmd,args.tempdir+'/logs/perchr_depth_png')
-  cmd = args.rscript_path+' '+udir+'/plot_depthmap.r '+args.tempdir+'/data/depth.sorted.bed.gz '+args.tempdir+'/data/chrlens.txt '+args.tempdir+'/plots/perchrdepth.pdf'
+  cmd = args.rscript_path+' '+udir+'/plot_depthmap.r '+args.tempdir+'/temp/depth.coverage-strata.sorted.bed.gz '+args.tempdir+'/data/chrlens.txt '+args.tempdir+'/temp/coverage-strata.key '+args.tempdir+'/plots/perchrdepth.pdf'
   sys.stderr.write(cmd+"\n")
   mycall(cmd,args.tempdir+'/logs/perchr_depth_pdf')
 

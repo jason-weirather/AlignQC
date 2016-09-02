@@ -21,7 +21,7 @@ make_image<-function(d,outfile,input_width,text_adjust) {
   dintergenic = d[d[,2]=="intergenic",4]
 
   par(oma=c(0.5,0.5,0.5,0.5))
-  par(mar=c(4,5,2,1))
+  par(mar=c(4.5,5,2,1))
   mat=rbind(c(1,2,3),c(4,4,4))
   layout(mat,c(1.5,5,1.1),c(6,6))
 
@@ -47,7 +47,7 @@ make_image<-function(d,outfile,input_width,text_adjust) {
   currsize = length(d[d[,4]>longest,1])
   if(currsize > biggest) { biggest = currsize }
 
-  par(mar=c(4,2,2,1))
+  par(mar=c(4.5,2,2,1))
   plot(1,type="n",xlim=c(0,longest),ylim=c(0,biggest*1.1),ylab="",bty="n",xlab="Aligned Length (bp)",xaxt='n',yaxt='n',cex.lab=axcex,yaxs="i")
   axis(side=1,at=seq(0,longest,500),cex.axis=axcex,lwd=recwid)
   axis(side=2,lwd=recwid,cex.axis=axcex)
@@ -64,13 +64,16 @@ make_image<-function(d,outfile,input_width,text_adjust) {
   intron = length(d[d[,2]=="intron" & d[,4]>longest,1])
   intergenic = length(d[d[,2]=="intergenic" & d[,4]>longest,1])
   tot = exon+intron+intergenic
-  plot(1,type="n",xlim=c(-50,500),ylim=c(0,tot*1.1),ylab="",bty="n",xlab="",xaxt='n',yaxt="n",cex.lab=axcex,yaxs="i")
-  axis(2,lwd=recwid,cex.axis=axcex)
-  rect(0,0,500,exon,col="#777777",lwd=recwid)
-  rect(0,exon,500,exon+intron,col="#FFDB58",lwd=recwid)
-  rect(0,exon+intron,500,exon+intron+intergenic,col="#007FFF",lwd=recwid)
-  mtext(paste(">",longest),side=1,at=500,adj=1,line=1,cex=axcex*0.67)
-
+  if(tot>0) {
+    plot(1,type="n",xlim=c(-50,500),ylim=c(0,tot*1.1),ylab="",bty="n",xlab="",xaxt='n',yaxt="n",cex.lab=axcex,yaxs="i")
+    axis(2,lwd=recwid,cex.axis=axcex)
+    rect(0,0,500,exon,col="#777777",lwd=recwid)
+    rect(0,exon,500,exon+intron,col="#FFDB58",lwd=recwid)
+    rect(0,exon+intron,500,exon+intron+intergenic,col="#007FFF",lwd=recwid)
+    mtext(paste(">",longest),side=1,at=500,adj=1,line=1,cex=axcex*0.67)
+  } else {
+    plot.new()
+  }
 
   logtrans<-function(num) {
     if(num==0) {

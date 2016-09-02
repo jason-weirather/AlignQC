@@ -18,16 +18,18 @@ def main(args):
     of = open(args.output,'w')
   names = {}
   tree = ElementTree.parse(args.xhtml_input)
-  sys.stderr.write("Traversing xhtml\n")
+  if args.verbose:
+    sys.stderr.write("Traversing xhtml\n")
   for v in [x for x in tree.iter() if x.tag=='{http://www.w3.org/1999/xhtml}a']:
     data = v.attrib
     name = None
     if 'download' in data:
       name = data['download']
-    if 'id' in data:
+    elif 'id' in data:
       name = data['id']
     if not name:
-      sys.stderr.write("warning no name for linked data\n")
+      if args.verbose:
+        sys.stderr.write("warning no name for linked data\n")
       continue
     info = data['href']
     m = re.match('data:[^,]+base64,',info)
@@ -40,7 +42,8 @@ def main(args):
       continue
     v = base64.b64decode(m.group(1))
     names[name] = v
-  sys.stderr.write("Finished traversing xhtml\n")
+  if args.verbose:
+    sys.stderr.write("Finished traversing xhtml\n")
   if args.list:
     for name in sorted(names.keys()):
       newname = name
@@ -125,6 +128,7 @@ def do_inputs():
   parser=argparse.ArgumentParser(description="Extract data from xhtml output of alignqc through the command line",formatter_class=argparse.ArgumentDefaultsHelpFormatter)
   parser.add_argument('xhtml_input',help="INPUT XHTML FILE")
   parser.add_argument('-o','--output',default='-',help="OUTPUTFILE or STDOUT if not set")
+  parser.add_argument('-v','--verbose',action='store_true',help="Show all stderr messages\n")
   group1 = parser.add_mutually_exclusive_group(required=True)
   group1.add_argument('-l','--list',action='store_true',help='show available data')
   group1.add_argument('-e','--extract',help='dump this data')
