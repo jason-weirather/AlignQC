@@ -6,7 +6,8 @@ from tempfile import mkdtemp, gettempdir
 from subprocess import Popen, PIPE
 
 #bring in the folder to the path for our utilities
-pythonfolder_loc = "../pylib"
+pythonfolder_loc = "../../Au-public/iron/utilities"
+#pythonfolder_loc = "../pylib"
 cmd_subfolder = os.path.realpath(os.path.abspath(os.path.join(os.path.split(inspect.getfile(inspect.currentframe() ))[0],pythonfolder_loc)))
 if cmd_subfolder not in sys.path:
   sys.path.insert(0,cmd_subfolder)
