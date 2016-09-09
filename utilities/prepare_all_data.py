@@ -144,7 +144,7 @@ def make_data_bam(args):
   sys.stderr.write("Generate the depth bed for the mapped reads\n")
   sys.stderr.write(cmd+"\n")
   gpd_to_bed_depth.external_cmd(cmd)
-  sys.stderr.write("Stratify the death to make it plot quicker and cleaner\n")
+  sys.stderr.write("Stratify the depth to make it plot quicker and cleaner\n")
   cmd = "bed_depth_to_stratified_coverage.py "+args.tempdir+'/data/depth.sorted.bed.gz'
   cmd += ' -l '+args.tempdir+"/data/chrlens.txt -o "+args.tempdir+'/temp/depth.coverage-strata.sorted.bed.gz'
   cmd += ' --output_key '+args.tempdir+'/temp/coverage-strata.key'
