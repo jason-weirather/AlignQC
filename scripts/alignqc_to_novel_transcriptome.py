@@ -37,7 +37,7 @@ def main():
         ' --minimum_support '+str(args.minimum_support)+\
         ' --gene_names '+\
         ' -o '+args.tempdir+'/novel_isoforms_nr.gpd.gz'
-  #gpd_to_nr.external_cmd(cmd)
+  gpd_to_nr.external_cmd(cmd)
 
   sys.stderr.write("reannotating novel based on our new gpd\n")
   # Now we reannotate the novel based on the these newly annotated isoforms
@@ -90,7 +90,7 @@ def main():
         ' --minimum_support '+str(args.minimum_support)+\
         ' --gene_names '+\
         ' -o '+args.tempdir+'/novel_isoforms_nr2.gpd.gz'
-  #gpd_to_nr.external_cmd(cmd)
+  gpd_to_nr.external_cmd(cmd)
 
   #Only need to reannotate if we are interested in whats left over
   #sys.stderr.write("reannotating novel based on our new gpd\n")
@@ -121,7 +121,7 @@ def main():
         ' --minimum_junction_end_support '+str(args.minimum_junction_end_support)+\
         ' --minimum_support '+str(args.minimum_support)+\
         ' -o '+args.tempdir+'/novel_locus_nr.gpd.gz'
-  #gpd_to_nr.external_cmd(cmd)
+  gpd_to_nr.external_cmd(cmd)
 
   sys.stderr.write("sort the novel isoforms\n")
   of = open(args.tempdir+'/novel_isoforms_nr.sorted.gpd.gz','w')
