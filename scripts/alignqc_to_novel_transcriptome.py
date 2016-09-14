@@ -37,12 +37,12 @@ def main():
         ' --minimum_support '+str(args.minimum_support)+\
         ' --gene_names '+\
         ' -o '+args.tempdir+'/novel_isoforms_nr.gpd.gz'
-  gpd_to_nr.external_cmd(cmd)
+  #gpd_to_nr.external_cmd(cmd)
 
   sys.stderr.write("reannotating novel based on our new gpd\n")
   # Now we reannotate the novel based on the these newly annotated isoforms
   cmd = 'gpd_anntotate.py '+args.tempdir+'/novel_locus_reads.gpd.gz '+\
-        ' --threads '+str(args.threads)+' '+\
+        ' --threads '+str(1)+' '+\
         ' -r '+args.tempdir+'/novel_isoforms_nr.gpd.gz '+\
         ' -o '+args.tempdir+'/novel_locus_reads.annot.txt.gz'
   gpd_annotate.external_cmd(cmd)
@@ -90,7 +90,7 @@ def main():
         ' --minimum_support '+str(args.minimum_support)+\
         ' --gene_names '+\
         ' -o '+args.tempdir+'/novel_isoforms_nr2.gpd.gz'
-  gpd_to_nr.external_cmd(cmd)
+  #gpd_to_nr.external_cmd(cmd)
 
   #Only need to reannotate if we are interested in whats left over
   #sys.stderr.write("reannotating novel based on our new gpd\n")
@@ -121,7 +121,7 @@ def main():
         ' --minimum_junction_end_support '+str(args.minimum_junction_end_support)+\
         ' --minimum_support '+str(args.minimum_support)+\
         ' -o '+args.tempdir+'/novel_locus_nr.gpd.gz'
-  gpd_to_nr.external_cmd(cmd)
+  #gpd_to_nr.external_cmd(cmd)
 
   sys.stderr.write("sort the novel isoforms\n")
   of = open(args.tempdir+'/novel_isoforms_nr.sorted.gpd.gz','w')
@@ -174,11 +174,68 @@ def main():
   p2.communicate()
   of.close()
 
+  # we are almost done but we need to make sure these genepreds aren't subsets of known genes
+  sys.stderr.write("reannotating novel-isoform by reference\n")
+  cmd = 'gpd_anntotate.py '+args.tempdir+'/novel_isoforms_nr.sorted.gpd.gz '+\
+        ' --threads '+str(1)+' '+\
+        ' -r '+args.reference_annotation_gpd+\
+        ' -o '+args.tempdir+'/novel_isoforms_nr.annot.txt.gz'
+  gpd_annotate.external_cmd(cmd)  
+  cmd = 'classify_reads.py '+args.tempdir+'/novel_isoforms_nr.annot.txt.gz '+args.tempdir+'/novel_isoforms_nr.sorted.gpd.gz -o '+args.tempdir+'/classify_novel_isoform_ref.txt.gz'
+  sys.stderr.write(cmd+"\n")
+  classify_reads.external_cmd(cmd)
+
+  # now we can screen to make sure things in the novel isoform file really are novel isoforms
+  blacklist = set()
+  finf = gzip.open(args.tempdir+'/classify_novel_isoform_ref.txt.gz')
+  for line in finf:
+    f = line.rstrip().split("\t")
+    if f[2]=='subset' or f[2]=='full': blacklist.add(f[0])
+  finf.close()
+  fof = gzip.open(args.tempdir+'/novel_isoforms_nr.filtered.sorted.gpd.gz','w')
+  finf = gzip.open(args.tempdir+'/novel_isoforms_nr.sorted.gpd.gz')
+  for line in finf:
+    f = line.rstrip().split("\t")
+    if f[1] in blacklist: continue
+    fof.write(line)
+  finf.close()
+  fof.close()
+
+
+  sys.stderr.write("reannotating novel-locus by reference\n")
+  cmd = 'gpd_anntotate.py '+args.tempdir+'/novel_loci_nr_named.sorted.gpd.gz '+\
+        ' --threads '+str(1)+' '+\
+        ' -r '+args.reference_annotation_gpd+\
+        ' -o '+args.tempdir+'/novel_loci_nr_named.annot.txt.gz'
+  gpd_annotate.external_cmd(cmd)  
+  cmd = 'classify_reads.py '+args.tempdir+'/novel_loci_nr_named.annot.txt.gz '+args.tempdir+'/novel_loci_nr_named.sorted.gpd.gz -o '+args.tempdir+'/classify_novel_loci.txt.gz'
+  sys.stderr.write(cmd+"\n")
+  classify_reads.external_cmd(cmd)
+
+  # now we can screen to make sure things in the novel isoform file really are novel isoforms
+  blacklist = set()
+  finf = gzip.open(args.tempdir+'/classify_novel_loci.txt.gz')
+  for line in finf:
+    f = line.rstrip().split("\t")
+    if f[2]=='subset' or f[2]=='full': blacklist.add(f[0])
+  finf.close()
+  fof = gzip.open(args.tempdir+'/novel_loci_nr_named.filtered.sorted.gpd.gz','w')
+  finf = gzip.open(args.tempdir+'/novel_loci_nr_named.sorted.gpd.gz')
+  for line in finf:
+    f = line.rstrip().split("\t")
+    if f[1] in blacklist: continue
+    fof.write(line)
+  finf.close()
+  fof.close()
+
+
+
+
   if not os.path.exists(args.output):
     os.makedirs(args.output)
 
-  copy(args.tempdir+'/novel_loci_nr_named.sorted.gpd.gz',args.output+'/novel_loci_nr_named.sorted.gpd.gz')
-  copy(args.tempdir+'/novel_isoforms_nr.sorted.gpd.gz',args.output+'/novel_isoforms_nr.sorted.gpd.gz')
+  copy(args.tempdir+'/novel_loci_nr_named.filtered.sorted.gpd.gz',args.output+'/novel_loci_nr_named.sorted.gpd.gz')
+  copy(args.tempdir+'/novel_isoforms_nr.filtered.sorted.gpd.gz',args.output+'/novel_isoforms_nr.sorted.gpd.gz')
   
   # Temporary working directory step 3 of 3 - Cleanup
   if not args.specific_tempdir:
@@ -227,6 +284,7 @@ def do_inputs():
   parser=argparse.ArgumentParser(description="",formatter_class=argparse.ArgumentDefaultsHelpFormatter)
   parser.add_argument('input_annot',help="<input annotbest.txt>")
   parser.add_argument('input_gpd',help="<input best.sorted.gpd>")
+  parser.add_argument('-a','--reference_annotation_gpd',required=True,help="Reference annotation GPD")
   parser.add_argument('-o','--output',required=True,help="OUTPUT DIRECTORY")
   parser.add_argument('--threads',type=int,default=cpu_count(),help="INT number of threads to run. Default is system cpu count")
 
