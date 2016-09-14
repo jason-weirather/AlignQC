@@ -28,7 +28,7 @@ def main():
   # first we need to run the classify
   classify_reads.external_cmd('classify_reads.py '+args.input_annot+' '+args.input_gpd+' -o '+args.tempdir+'/classify.txt.gz')
 
-  get_novel_sets(args.tempdir+'/classify.txt.gz',args.input_gpd,args)
+  get_novel_sets(args.tempdir+'/classify.txt.gz',args.input_gpd,args.tempdir+'/novel_isoform_reads.gpd.gz',args.tempdir+'/novel_locus_reads.gpd.gz',args)
   # Now we can make a new non-redundant set of genpreds from the novel isoforms
   sys.stderr.write("making NR novel isoforms\n")
   cmd = 'gpd_to_nr.py '+args.tempdir+'/novel_isoform_reads.gpd.gz '+\
@@ -47,24 +47,12 @@ def main():
         ' -o '+args.tempdir+'/novel_locus_reads.annot.txt.gz'
   gpd_annotate.external_cmd(cmd)
   
-  # we should save the novel isoform reads we have so far
-  binf = gzip.open(args.tempdir+'/novel_isoform_reads.gpd.gz')
-  bof = gzip.open(args.tempdir+'/save_novel_isoform_reads.gpd.gz','w')
-  for line in binf: bof.write(line)
-  bof.close()
-  binf.close()
-  binf = gzip.open(args.tempdir+'/novel_locus_reads.gpd.gz')
-  bof = gzip.open(args.tempdir+'/save_novel_locus_reads.gpd.gz','w')
-  for line in binf: bof.write(line)
-  bof.close()
-  binf.close()
-  
   # now this new annotation should be classified
   # the new isoform will be in novel_isoform_reads.gpd.gz
   cmd = 'classify_reads.py '+args.tempdir+'/novel_locus_reads.annot.txt.gz '+args.tempdir+'/novel_locus_reads.gpd.gz -o '+args.tempdir+'/classify_novel.txt.gz'
   sys.stderr.write(cmd+"\n")
   classify_reads.external_cmd(cmd)
-  get_novel_sets(args.tempdir+'/classify_novel.txt.gz',args.tempdir+'/save_novel_locus_reads.gpd.gz',args)
+  get_novel_sets(args.tempdir+'/classify_novel.txt.gz',args.tempdir+'/novel_locus_reads.gpd.gz',args.tempdir+'/novel_isoform_reads2.gpd.gz',args.tempdir+'/novel_locus_reads2.gpd.gz',args)
 
   # now lets combine our novel isoform reads making sure to sort them
   of = open(args.tempdir+'/new_novel_isoform_reads.gpd.gz','w')
@@ -72,10 +60,10 @@ def main():
   p2 = Popen(cmd2.split(),stdout=of,stdin=PIPE)
   cmd1 = 'sort -k3,3 -k5,5n -k6,6n'
   p1 = Popen(cmd1.split(),stdout=p2.stdin,stdin=PIPE)
-  inf = gzip.open(args.tempdir+'/save_novel_isoform_reads.gpd.gz')
+  inf = gzip.open(args.tempdir+'/novel_isoform_reads.gpd.gz')
   for line in inf:  p1.stdin.write(line)
   inf.close()
-  inf = gzip.open(args.tempdir+'/novel_isoform_reads.gpd.gz')
+  inf = gzip.open(args.tempdir+'/novel_isoform_reads2.gpd.gz')
   for line in inf: p1.stdin.write(line)
   inf.close()
   p1.communicate()
@@ -108,7 +96,7 @@ def main():
   p2 = Popen(cmd2.split(),stdout=of,stdin=PIPE)
   cmd1 = 'sort -k3,3 -k5,5n -k6,6n'
   p1 = Popen(cmd1.split(),stdout=p2.stdin,stdin=PIPE)
-  inf = gzip.open(args.tempdir+'/novel_locus_reads.gpd.gz')
+  inf = gzip.open(args.tempdir+'/novel_locus_reads2.gpd.gz')
   for line in inf:  p1.stdin.write(line)
   inf.close()
   p1.communicate()
@@ -241,7 +229,7 @@ def main():
   if not args.specific_tempdir:
     rmtree(args.tempdir)
 
-def get_novel_sets(classification,input_gpd,args):
+def get_novel_sets(classification,input_gpd,out_iso,out_locus,args):
   # now we want to create a non redundant version of the novel isoforms
   novel_isoforms = set()
   novel_isoform_genes = {}
@@ -256,8 +244,8 @@ def get_novel_sets(classification,input_gpd,args):
       novel_loci.add(f[0])
   inf.close()
   sys.stderr.write("outputing novel isoforms to a file\n")
-  tof = gzip.open(args.tempdir+'/novel_isoform_reads.gpd.gz','w')
-  lof = gzip.open(args.tempdir+'/novel_locus_reads.gpd.gz','w')
+  tof = gzip.open(out_iso,'w')
+  lof = gzip.open(out_locus,'w')
   inf_gpd = None;
   if input_gpd[-3:]=='.gz':
     inf_gpd = gzip.open(input_gpd)

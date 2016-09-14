@@ -50,7 +50,7 @@ def main(args):
     f = line.rstrip().split("\t")
     if f[1] in seen_reads: continue
     if int(f[8]) < 2: continue
-    of.write(f[2]+"\t"+"\tnovel-locus"+"\n")
+    of.write(f[1]+"\t"+"\tnovel-locus"+"\n")
   sys.stderr.write("\n")
 def do_inputs():
   parser = argparse.ArgumentParser(description="",formatter_class=argparse.ArgumentDefaultsHelpFormatter)
