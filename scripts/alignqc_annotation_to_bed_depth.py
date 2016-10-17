@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 import sys, argparse, gzip
 from Bio.Format.GPD import GPD
 from Bio.Range import ranges_to_coverage

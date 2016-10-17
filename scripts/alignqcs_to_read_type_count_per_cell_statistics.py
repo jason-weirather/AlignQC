@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 import sys, argparse, re, os
 from subprocess import Popen, PIPE
 from Bio.Statistics import average, median, standard_deviation

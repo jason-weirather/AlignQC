@@ -1,4 +1,4 @@
-#!/opt/R/3.2.1/bin/Rscript
+#!/usr/bin/env Rscript
 
 #### BEGIN FUNCTION DEFINITIONS ####
 make_image<-function(d,infile,title_string,input_width,text_adjust) {

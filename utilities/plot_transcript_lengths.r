@@ -1,4 +1,4 @@
-#!/opt/R/3.3.0/bin/R
+#!/usr/bin/env Rscript
 
 ##### BEGIN FUNCTION BLOCK ######
 make_image<-function(d,outfile,input_width,text_adjust) {

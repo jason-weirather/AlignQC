@@ -1,4 +1,4 @@
-#!/opt/R/3.2.1/bin/Rscript
+#!/usr/bin/env Rscript
 
 # Read the inputs
 # 1. bed depth file

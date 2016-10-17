@@ -1,4 +1,5 @@
-#!/opt/R/3.2.1/bin/Rscript
+#!/usr/bin/env Rscript
+
 # Read the inputs
 # 1. line_plot_table.txt.gz
 # 2. total_distro_table.txt.gz
