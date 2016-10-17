@@ -104,13 +104,26 @@ def process_locus(es,args):
         ex_start = j.right
         ex_end = j.left
         # we can look for evidence for each
-        evstart = [x.get_payload().distance(ex_start) for x in starts if x.overlaps(ex_start) and x.get_payload().distance(ex_start) <= args.window]
+        evstart = [x.get_payload().start-ex_start.start for x in starts if x.overlaps(ex_start) and x.get_payload().distance(ex_start) <= args.window]
         if len(evstart) > 0:
-          #print len(start_distances)
-          out_start_distances.append(min(evstart))
-        evend = [x.get_payload().distance(ex_end) for x in ends if x.overlaps(ex_end) and x.get_payload().distance(ex_end) <= args.window]
+          # get the best distance
+          min_dist = args.window+10
+          num = None
+          for v in evstart:
+            if abs(v) < min_dist: 
+              min_dist = abs(v)
+              num = v
+          out_start_distances.append(num)
+        evend = [ex_end.end-x.get_payload().end for x in ends if x.overlaps(ex_end) and x.get_payload().distance(ex_end) <= args.window]
         if len(evend) > 0:
-          out_end_distances.append(min(evend))
+          # get the best distance
+          min_dist = args.window+10
+          num = None
+          for v in evend:
+            if abs(v) < min_dist: 
+              min_dist = abs(v)
+              num = v
+          out_end_distances.append(num)
     return [out_start_distances,out_end_distances]
 
 def get_search_ranges_from_strings(position_strings,args):

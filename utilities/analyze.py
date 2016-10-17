@@ -135,7 +135,7 @@ def do_inputs():
 
   ## Params for rarefraction plots
   label9 = parser.add_argument_group(title="Rarefraction plot parameters")
-  label9.add_argument('--samples_per_xval',type=int,default=500)
+  label9.add_argument('--samples_per_xval',type=int,default=10)
 
   label10 = parser.add_argument_group(title="Path parameters")
   label10.add_argument('--rscript_path',default='Rscript',help="The location of the Rscript executable.  Default is installed in path")
