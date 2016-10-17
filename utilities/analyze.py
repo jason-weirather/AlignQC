@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 import argparse, os, inspect, sys
 from subprocess import Popen, PIPE
 from tempfile import mkdtemp, gettempdir

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 import sys, argparse, re, gzip, os, inspect
 
 #bring in the folder to the path for our utilities
@@ -169,7 +169,7 @@ def is_gzip(name):
   return False
 
 def do_inputs():
-  parser = argparse.ArgumentParser(description="",formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+  parser = argparse.ArgumentParser(description="Generate a coverage per bin over the length of a molecule to observe bias in the 5' to 3' mapping of reads",formatter_class=argparse.ArgumentDefaultsHelpFormatter)
   parser.add_argument('read_genepred',help="Input genepred")
   parser.add_argument('ref_genepred',help="Reference genepred")
   parser.add_argument('annotations',help="Input annotations")

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # This script will call most of the individual modules analyzing the data
 
 import argparse, sys, os, time, re, gzip, locale, inspect
@@ -485,7 +485,8 @@ def make_data_bam_annotation(args):
         args.tempdir+'/data/best.sorted.gpd.gz '+\
         args.annotation+' '+ args.tempdir+'/data/annotbest.txt.gz '+\
         '-o '+args.tempdir+'/data/bias_table.txt.gz '+\
-        '--output_counts '+args.tempdir+'/data/bias_counts.txt '
+        '--output_counts '+args.tempdir+'/data/bias_counts.txt '+\
+        '--allow_overflowed_matches '
   sys.stderr.write(cmd+"\n")
   annotated_read_bias_analysis.external_cmd(cmd)
 

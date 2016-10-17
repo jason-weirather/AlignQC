@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 import argparse, sys, os, re, base64, zlib, gzip, StringIO
 from shutil import rmtree
 from multiprocessing import cpu_count

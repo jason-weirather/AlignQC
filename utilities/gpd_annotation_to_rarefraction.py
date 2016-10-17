@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 import sys, argparse, gzip, re, random, collections, inspect, os
 from multiprocessing import Pool, cpu_count
 

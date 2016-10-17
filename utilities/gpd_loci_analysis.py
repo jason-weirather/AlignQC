@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 import argparse, sys, os, re, gzip, inspect, os
 from random import shuffle
 from shutil import rmtree

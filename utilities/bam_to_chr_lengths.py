@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 import sys, argparse, os, inspect
 
 #bring in the folder to the path for our utilities

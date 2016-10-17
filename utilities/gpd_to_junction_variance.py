@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 import argparse, sys, os, gzip
 from shutil import rmtree
 from tempfile import mkdtemp, gettempdir
