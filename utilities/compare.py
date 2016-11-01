@@ -76,7 +76,7 @@ def main(args):
       if len(lengths) > 2:
         file['lengths']['stddev']=standard_deviation([x[1] for x in lengths])
       if len([x[0] for x in lengths if x[0] != 0]) > 2:
-        file['lengths']['stddev_aligned']=average([x[0] for x in lengths if x[0] != 0])
+        file['lengths']['stddev_aligned']=standard_deviation([x[0] for x in lengths if x[0] != 0])
       
   # Now we can output table
   ofname = args.tempdir+'/stats_table.txt'
