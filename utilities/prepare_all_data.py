@@ -285,6 +285,7 @@ def make_data_bam(args):
   cmd = udir+'/gpd_to_exon_distro.py '
   cmd += args.tempdir+'/data/best.sorted.gpd.gz -o '
   cmd += args.tempdir+'/data/exon_size_distro.txt.gz'
+  cmd += ' --threads '+str(args.threads)
   sys.stderr.write(cmd+"\n")
   gpd_to_exon_distro.external_cmd(cmd)
   tlog.write(cmd)
