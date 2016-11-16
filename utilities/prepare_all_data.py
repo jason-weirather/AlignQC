@@ -87,6 +87,8 @@ class TimeLog:
     self.st = time.time()
     self.fh.write(msg+"\n")
     self.fh.flush()
+  def write(self,msg):
+    self.fh.write('$ '+msg+"\n")
   def stop(self):
     self.fh.write("--- "+str(time.time()-self.st)+ " seconds ---\n")
     self.fh.flush()
@@ -104,6 +106,7 @@ def make_data_bam(args):
   sys.stderr.write("Creating initial alignment mapping data\n")
   sys.stderr.write(cmd+"\n")
   bam_preprocess.external_cmd(cmd)
+  tlog.write(cmd)
   tlog.stop()
 
   tlog.start("traverse preprocessed")
@@ -128,6 +131,7 @@ def make_data_bam(args):
   sys.stderr.write("Traverse bam for alignment analysis\n")
   sys.stderr.write(cmd+"\n")
   traverse_preprocessed.external_cmd(cmd)
+  tlog.write(cmd)
   tlog.stop()
 
   tlog.start("get chromosome lengths from bam")
@@ -136,6 +140,7 @@ def make_data_bam(args):
   sys.stderr.write("Writing chromosome lengths from header\n")
   sys.stderr.write(cmd+"\n")
   bam_to_chr_lengths.external_cmd(cmd)
+  tlog.write(cmd)
   tlog.stop()
 
   tlog.start("look for platform specific read names")
@@ -146,6 +151,7 @@ def make_data_bam(args):
   cmd += args.tempdir+'/data/special_report'
   sys.stderr.write(cmd+"\n") 
   get_platform_report.external_cmd(cmd)
+  tlog.write(cmd)
   tlog.stop()
 
 
@@ -165,12 +171,14 @@ def make_data_bam(args):
     cmd = args.rscript_path+' '+udir+'/plot_pacbio.r '+args.tempdir+'/data/special_report.pacbio '+args.tempdir+'/plots/pacbio.pdf'
     sys.stderr.write(cmd+"\n")
     mycall(cmd,args.tempdir+'/logs/special_report_pacbio_pdf')
+  tlog.write(cmd)
   tlog.stop()
 
   tlog.start("get a depth for our best alignments")
   # 5. Go through the genepred file and get a depth bed for our best alignments
   sys.stderr.write("Go through genepred best alignments and make a bed depth file\n")
   cmd = "gpd_to_bed_depth.py "+args.tempdir+'/data/best.sorted.gpd.gz -o '+args.tempdir+'/data/depth.sorted.bed.gz'
+  cmd += " --threads "+str(args.threads)
   sys.stderr.write("Generate the depth bed for the mapped reads\n")
   sys.stderr.write(cmd+"\n")
   gpd_to_bed_depth.external_cmd(cmd)
@@ -185,6 +193,7 @@ def make_data_bam(args):
   tinf = gzip.open(args.tempdir+'/data/lengths.txt.gz')
   for line in tinf:  rcnt += 1
   tinf.close()
+  tlog.write(cmd)
   tlog.stop()
 
   # For now reporting loci will be optional until it can be tested and optimized.
@@ -220,6 +229,7 @@ def make_data_bam(args):
                '#FF000088 '
       sys.stderr.write(cmd+"\n")
       mycall(cmd,args.tempdir+'/logs/plot_locus_rarefraction_'+ext)
+    tlog.write(cmd)
     tlog.stop()
 
   tlog.start("get ready for alignment plot")
@@ -233,6 +243,7 @@ def make_data_bam(args):
   sys.stderr.write("Make alignment plots\n")
   sys.stderr.write(cmd+"\n")
   make_alignment_plot.external_cmd(cmd)
+  tlog.write(cmd)
   tlog.stop()
 
   tlog.start("make depth reports")
@@ -241,6 +252,7 @@ def make_data_bam(args):
   cmd = udir+'/depth_to_coverage_report.py '+args.tempdir+'/data/depth.sorted.bed.gz '+args.tempdir+'/data/chrlens.txt -o '+args.tempdir+'/data'
   sys.stderr.write(cmd+"\n")
   depth_to_coverage_report.external_cmd(cmd)
+  tlog.write(cmd)
   tlog.stop()
 
   tlog.start("make coverage plots")
@@ -252,6 +264,7 @@ def make_data_bam(args):
   cmd = args.rscript_path+' '+udir+'/plot_chr_depth.r  '+args.tempdir+'/data/line_plot_table.txt.gz '+args.tempdir+'/data/total_distro_table.txt.gz '+args.tempdir+'/data/chr_distro_table.txt.gz '+args.tempdir+'/plots/covgraph.pdf'
   sys.stderr.write(cmd+"\n")
   mycall(cmd,args.tempdir+'/logs/covgraph_pdf')
+  tlog.write(cmd)
   tlog.stop()
 
   tlog.start("make chr depth plots")
@@ -263,6 +276,7 @@ def make_data_bam(args):
   cmd = args.rscript_path+' '+udir+'/plot_depthmap.r '+args.tempdir+'/temp/depth.coverage-strata.sorted.bed.gz '+args.tempdir+'/data/chrlens.txt '+args.tempdir+'/temp/coverage-strata.key '+args.tempdir+'/plots/perchrdepth.pdf'
   sys.stderr.write(cmd+"\n")
   mycall(cmd,args.tempdir+'/logs/perchr_depth_pdf')
+  tlog.write(cmd)
   tlog.stop()
 
   tlog.start("get the exon size distribution")
@@ -273,6 +287,7 @@ def make_data_bam(args):
   cmd += args.tempdir+'/data/exon_size_distro.txt.gz'
   sys.stderr.write(cmd+"\n")
   gpd_to_exon_distro.external_cmd(cmd)
+  tlog.write(cmd)
   tlog.stop()
 
   tlog.start("plot exon distro")
@@ -282,6 +297,7 @@ def make_data_bam(args):
   cmd = args.rscript_path+' '+udir+'/plot_exon_distro.r '+args.tempdir+'/data/exon_size_distro.txt.gz '+args.tempdir+'/plots/exon_size_distro.pdf'
   sys.stderr.write(cmd+"\n")
   mycall(cmd,args.tempdir+'/logs/exon_size_distro_pdf')
+  tlog.write(cmd)
   tlog.stop()
 
   tlog.start("make bed file")
@@ -321,6 +337,7 @@ def make_data_bam(args):
   cmd += ' --color purple'
   sys.stderr.write(cmd+"\n")
   genepred_to_bed.external_cmd(cmd)
+  tlog.write(cmd)
   tlog.stop()
 
 def make_data_bam_reference(args):
@@ -348,6 +365,7 @@ def make_data_bam_reference(args):
   sys.stderr.write("Making context plot\n")
   sys.stderr.write(cmd+"\n")
   bam_to_context_error_plot.external_cmd(cmd)
+  tlog.write(cmd)
   tlog.stop()
 
   tlog.start("alignment based error")
@@ -363,6 +381,7 @@ def make_data_bam_reference(args):
   sys.stderr.write("Making alignment error plot\n")
   sys.stderr.write(cmd+"\n")
   bam_to_alignment_error_plot.external_cmd(cmd)
+  tlog.write(cmd)
   tlog.stop()
 
 def make_data_bam_annotation(args):
@@ -379,6 +398,7 @@ def make_data_bam_annotation(args):
   sys.stderr.write("Finding genomic features and assigning reads membership\n")
   sys.stderr.write(cmd+"\n")
   annotate_from_genomic_features.external_cmd(cmd)
+  tlog.write(cmd)
   tlog.stop()
 
   tlog.start("get per-exon depth")
@@ -390,6 +410,7 @@ def make_data_bam_annotation(args):
   cmd += args.tempdir+'/data/exondepth.bed.gz'
   sys.stderr.write(cmd+"\n")
   get_depth_subset.external_cmd(cmd)
+  tlog.write(cmd)
   tlog.stop()  
 
   tlog.start("get per-intron subset")
@@ -398,6 +419,7 @@ def make_data_bam_annotation(args):
   cmd += args.tempdir+'/data/introndepth.bed.gz'
   sys.stderr.write(cmd+"\n")
   get_depth_subset.external_cmd(cmd)
+  tlog.write(cmd)
   tlog.stop()
 
   tlog.start("get per intergenic depth")
@@ -406,6 +428,7 @@ def make_data_bam_annotation(args):
   cmd += args.tempdir+'/data/intergenicdepth.bed.gz'
   sys.stderr.write(cmd+"\n")
   get_depth_subset.external_cmd(cmd)
+  tlog.write(cmd)
   tlog.stop()  
 
   tlog.start("plot feature depth png")
@@ -418,6 +441,7 @@ def make_data_bam_annotation(args):
   cmd += args.tempdir+'/plots/feature_depth.png'
   sys.stderr.write(cmd+"\n")
   mycall(cmd,args.tempdir+'/logs/featuredepth_png')  
+  tlog.write(cmd)
   tlog.stop()
 
   tlog.start("plot feature depth pdf")
@@ -429,6 +453,7 @@ def make_data_bam_annotation(args):
   cmd += args.tempdir+'/plots/feature_depth.pdf'
   sys.stderr.write(cmd+"\n")
   mycall(cmd,args.tempdir+'/logs/featuredepth_pdf')  
+  tlog.write(cmd)
   tlog.stop()
 
   tlog.start("generate plots of which reads correspont to which features png")
@@ -439,6 +464,7 @@ def make_data_bam_annotation(args):
   cmd += args.tempdir+'/plots/read_genomic_features.png'
   sys.stderr.write(cmd+"\n")
   mycall(cmd,args.tempdir+'/logs/read_genomic_features_png')  
+  tlog.write(cmd)
   tlog.stop()
 
   tlog.start("generate plots of which reads correspont to which features pdf")
@@ -447,6 +473,7 @@ def make_data_bam_annotation(args):
   cmd += args.tempdir+'/plots/read_genomic_features.pdf'
   sys.stderr.write(cmd+"\n")
   mycall(cmd,args.tempdir+'/logs/read_genomic_features_pdf')  
+  tlog.write(cmd)
   tlog.stop()
 
   tlog.start("annotate the reads")  
@@ -457,6 +484,7 @@ def make_data_bam_annotation(args):
   sys.stderr.write("Annotating reads\n")
   sys.stderr.write(cmd+"\n")
   gpd_annotate.external_cmd(cmd)
+  tlog.write(cmd)
   tlog.stop()
 
   tlog.start("plot by transcript length png")
@@ -467,6 +495,7 @@ def make_data_bam_annotation(args):
   cmd += args.tempdir+'/plots/transcript_distro.png'
   sys.stderr.write(cmd+"\n")
   mycall(cmd,args.tempdir+'/logs/transcript_distro_png')  
+  tlog.write(cmd)
   tlog.stop()
   
   tlog.start("plot by transcript length png")
@@ -476,6 +505,7 @@ def make_data_bam_annotation(args):
   cmd += args.tempdir+'/plots/transcript_distro.pdf'
   sys.stderr.write(cmd+"\n")
   mycall(cmd,args.tempdir+'/logs/transcript_distro_pdf')  
+  tlog.write(cmd)
   tlog.stop()  
 
   tlog.start("make length distribution from annotations")
@@ -487,6 +517,7 @@ def make_data_bam_annotation(args):
   cmd += '-o '+args.tempdir+'/data/annot_lengths.txt.gz'
   sys.stderr.write(cmd+"\n")
   annotated_length_analysis.external_cmd(cmd)
+  tlog.write(cmd)
   tlog.stop()
 
   tlog.start("plot annot length distro png")
@@ -496,6 +527,7 @@ def make_data_bam_annotation(args):
   cmd += args.tempdir+'/plots/annot_lengths.png'
   sys.stderr.write(cmd+"\n")
   mycall(cmd,args.tempdir+'/logs/annot_lengths_png')  
+  tlog.write(cmd)
   tlog.stop()
 
   tlog.start("plot annot length distro png")
@@ -504,6 +536,7 @@ def make_data_bam_annotation(args):
   cmd += args.tempdir+'/plots/annot_lengths.pdf'
   sys.stderr.write(cmd+"\n")
   mycall(cmd,args.tempdir+'/logs/annot_lengths_pdf')  
+  tlog.write(cmd)
   tlog.stop()
 
   # 9. Get rarefraction curve data
@@ -524,6 +557,7 @@ def make_data_bam_annotation(args):
   cmd += ' --gene -o '+args.tempdir+'/data/gene_rarefraction.txt'
   sys.stderr.write(cmd+"\n")
   gpd_annotation_to_rarefraction.external_cmd(cmd)
+  tlog.write(cmd)
   tlog.stop()
 
   tlog.start("rarefraction transcript")
@@ -534,6 +568,7 @@ def make_data_bam_annotation(args):
   cmd += ' --transcript -o '+args.tempdir+'/data/transcript_rarefraction.txt'
   sys.stderr.write(cmd+"\n")
   gpd_annotation_to_rarefraction.external_cmd(cmd)
+  tlog.write(cmd)
   tlog.stop()
 
   tlog.start("rarefraction gene full")
@@ -544,6 +579,7 @@ def make_data_bam_annotation(args):
   cmd += ' --full --gene -o '+args.tempdir+'/data/gene_full_rarefraction.txt'
   sys.stderr.write(cmd+"\n")
   gpd_annotation_to_rarefraction.external_cmd(cmd)
+  tlog.write(cmd)
   tlog.stop()
 
   tlog.start("rarefraction gene full")
@@ -554,6 +590,7 @@ def make_data_bam_annotation(args):
   cmd += ' --full --transcript -o '+args.tempdir+'/data/transcript_full_rarefraction.txt'
   sys.stderr.write(cmd+"\n")
   gpd_annotation_to_rarefraction.external_cmd(cmd)
+  tlog.write(cmd)
   tlog.stop()
 
   tlog.start("plot multiple rarefractions")
@@ -569,6 +606,7 @@ def make_data_bam_annotation(args):
              '#0000FF88 '
       sys.stderr.write(cmd+"\n")
       mycall(cmd,args.tempdir+'/logs/plot_'+type+'_rarefraction_'+ext)
+      tlog.write(cmd)
   tlog.stop()
 
   tlog.start("use annotations to check for 5' to 3' biase")
@@ -582,6 +620,7 @@ def make_data_bam_annotation(args):
         '--allow_overflowed_matches '
   sys.stderr.write(cmd+"\n")
   annotated_read_bias_analysis.external_cmd(cmd)
+  tlog.write(cmd)
   tlog.stop()
 
   tlog.start("plot bias png")
@@ -590,6 +629,7 @@ def make_data_bam_annotation(args):
         args.tempdir+'/plots/bias.png'
   sys.stderr.write(cmd+"\n")
   mycall(cmd,args.tempdir+'/logs/bias_png.log')
+  tlog.write(cmd)
   tlog.stop()
 
   tlog.start("plot bias pdf")
@@ -597,6 +637,7 @@ def make_data_bam_annotation(args):
         args.tempdir+'/plots/bias.pdf'
   sys.stderr.write(cmd+"\n")
   mycall(cmd,args.tempdir+'/logs/bias_pdf.log')
+  tlog.write(cmd)
   tlog.stop()
 
   return
