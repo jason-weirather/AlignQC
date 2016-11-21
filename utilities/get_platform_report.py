@@ -33,7 +33,7 @@ def main(args):
   unclassified = {'aligned':0,'unaligned':0}
   classified = {}
   pb_cell = {}
-  pb_mol = set()
+  #pb_mol = set()
   for line in inf:
     f = line.rstrip().split("\t")
     name = f[0]
@@ -55,7 +55,7 @@ def main(args):
       if cell not in pb_cell: pb_cell[cell] = {'molecules':set(),'reads':0,'molecules_aligned':set()}
       pb_cell[cell]['molecules'].add(mol)
       pb_cell[cell]['reads'] += 1
-      pb_mol.add(mol)
+      #pb_mol.add(mol)
       if 'PacBio' not in classified:
         classified['PacBio'] = {}
       type = 'ccs'
@@ -84,7 +84,7 @@ def main(args):
   of.write("GN\tUnclassified\t\t"+str(sum(unclassified.values()))+"\t"+str(unclassified['aligned'])+"\t"+str(unclassified['unaligned'])+"\n")
   if 'PacBio' in classified:
     of.write("PB\tCell Count\t"+str(len(pb_cell.keys()))+"\n")
-    of.write("PB\tMolecule Count\t"+str(len(pb_mol))+"\n")
+    of.write("PB\tMolecule Count\t"+str(sum([len(pb_cell[x]['molecules']) for x in pb_cell.keys()]))+"\n")
     of.write("PB\tAligned Molecule Count\t"+str(sum([len(pb_cell[x]['molecules_aligned']) for x in pb_cell.keys()]))+"\n")
     of.write("PB\tMax Reads Per Cell\t"+str(max([pb_cell[x]['reads'] for x in pb_cell.keys()]))+"\n")
     of.write("PB\tAvg Reads Per Cell\t"+str(average([pb_cell[x]['reads'] for x in pb_cell.keys()]))+"\n")

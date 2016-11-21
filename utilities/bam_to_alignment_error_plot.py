@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import argparse, sys, os, random, inspect, os
+import argparse, sys, os, random, inspect, os, time, gc
 from shutil import rmtree
 from multiprocessing import cpu_count
 from tempfile import mkdtemp, gettempdir
@@ -14,38 +14,37 @@ if cmd_subfolder not in sys.path:
 from Bio.Format.Sam import BAMFile
 from Bio.Errors import ErrorProfileFactory
 from Bio.Format.Fasta import FastaData
+from Bio.Format.BamIndex import BAMIndexRandomAccessPrimary as BIRAP
 
 def main(args):
 
   sys.stderr.write("Reading our reference Fasta\n")
   ref = FastaData(open(args.reference,'rb').read())
   sys.stderr.write("Finished reading our reference Fasta\n")
-  bf = None
-  if args.input_index:
-    bf = BAMFile(args.input,reference=ref,index_file=args.input_index)
-    bf.read_index(index_file=args.input_index)
-  else:
-    bf = BAMFile(args.input,reference=ref)
-    bf.read_index()
+  bf = BAMFile(args.input,reference=ref)
+  bind = None
   epf = ErrorProfileFactory()
   if args.random:
-    if not bf.has_index():
-      sys.stderr.write("Random access requires our format of index bgi to be set\n")
-      sys.exit()
+    sys.stderr.write("Reading index\n")
+    if args.input_index:
+      bind = BIRAP(index_file=args.input_index,alignment_file=args.input)
+    else:
+      bind = BIRAP(index_file=args.input+'.bgi',alignment_file=args.input)
     z = 0
     while True:
-      rname = random.choice(bf.index.get_names())
-      coord = bf.index.get_longest_target_alignment_coords_by_name(rname)
+      #rname = random.choice(bf.index.get_names())
+      #coord = bf.index.get_longest_target_alignment_coords_by_name(rname)
+      coord = bind.get_random_coord()
       if not coord: continue
       e = bf.fetch_by_coord(coord)
-      if e.is_aligned():
-        epf.add_alignment(e)
-        z+=1
-        #print z
-        if z %100==1:
-          con = epf.get_alignment_errors().alignment_length
-          if args.max_length <= con: break
-          sys.stderr.write(str(con)+"/"+str(args.max_length)+" bases from "+str(z)+" alignments\r")
+      if not e.is_aligned(): continue
+      epf.add_alignment(e)
+      z+=1
+      #print z
+      if z %100==1:
+        con = epf.get_alignment_errors().alignment_length
+        if args.max_length <= con: break
+        sys.stderr.write(str(con)+"/"+str(args.max_length)+" bases from "+str(z)+" alignments\r")
     sys.stderr.write("\n")
   else:
     z = 0
@@ -82,6 +81,13 @@ def main(args):
     of.write(epf.get_alignment_errors().get_stats())
     of.close()
   sys.stderr.write("finished\n")
+  if bind:
+    bind.destroy()
+  bf = None
+  epf.close()
+  time.sleep(5)
+  gc.collect()
+  time.sleep(5)  
   # Temporary working directory step 3 of 3 - Cleanup
   if not args.specific_tempdir:
     rmtree(args.tempdir)
@@ -137,4 +143,4 @@ def external_cmd(cmd):
 if __name__=="__main__":
   #do our inputs
   args = do_inputs()
-  main()
+  main(args)

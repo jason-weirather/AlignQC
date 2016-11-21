@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 # This script will call most of the individual modules analyzing the data
 
-import argparse, sys, os, time, re, gzip, locale, inspect
+import argparse, sys, os, time, re, gzip, locale, inspect, time
 from subprocess import Popen, PIPE
+
 
 # BAM imports
 import bam_preprocess
@@ -63,6 +64,7 @@ def main(args):
 
   ## Extract data that can be realized from the bam
   make_data_bam(args)
+  
 
   ## Extract data that can be realized from the bam and reference
   if args.reference:
@@ -310,20 +312,28 @@ def make_data_bam(args):
   cmd += ' --color red'
   sys.stderr.write(cmd+"\n")
   genepred_to_bed.external_cmd(cmd)
+  tlog.write(cmd)
+  tlog.stop()
 
+  tlog.start("make bed file")
   cmd = 'genepred_to_bed.py --headername '+args.input+':trans-chimera '
   cmd += ' '+args.tempdir+'/data/chimera.gpd.gz'
   cmd += ' -o '+args.tempdir+'/data/chimera.bed.gz'
   cmd += ' --color blue'
   sys.stderr.write(cmd+"\n")
   genepred_to_bed.external_cmd(cmd)
+  tlog.write(cmd)
+  tlog.stop()
 
+  tlog.start("make bed file")
   cmd = 'genepred_to_bed.py --headername '+args.input+':gapped '
   cmd += ' '+args.tempdir+'/data/gapped.gpd.gz'
   cmd += ' -o '+args.tempdir+'/data/gapped.bed.gz'
   cmd += ' --color orange'
   sys.stderr.write(cmd+"\n")
   genepred_to_bed.external_cmd(cmd)
+  tlog.write(cmd)
+  tlog.stop()
 
   cmd = 'genepred_to_bed.py --headername '+args.input+':self-chimera '
   cmd += ' '+args.tempdir+'/data/technical_chimeras.gpd.gz'
@@ -331,7 +341,10 @@ def make_data_bam(args):
   cmd += ' --color green'
   sys.stderr.write(cmd+"\n")
   genepred_to_bed.external_cmd(cmd)
+  tlog.write(cmd)
+  tlog.stop()
 
+  tlog.start("make bed file")
   cmd = 'genepred_to_bed.py --headername '+args.input+':self-atypical '
   cmd += ' '+args.tempdir+'/data/technical_atypical_chimeras.gpd.gz'
   cmd += ' -o '+args.tempdir+'/data/technical_atypical_chimeras.bed.gz'
@@ -368,6 +381,7 @@ def make_data_bam_reference(args):
   bam_to_context_error_plot.external_cmd(cmd)
   tlog.write(cmd)
   tlog.stop()
+  #gc.collect()
 
   tlog.start("alignment based error")
   # 2. Alignment overall error
@@ -379,11 +393,14 @@ def make_data_bam_reference(args):
     cmd += ' --max_length '+str(args.alignment_error_max_length)
   if indfile:
     cmd += ' --input_index '+indfile+' '
+  cmd += ' --random '
   sys.stderr.write("Making alignment error plot\n")
   sys.stderr.write(cmd+"\n")
   bam_to_alignment_error_plot.external_cmd(cmd)
   tlog.write(cmd)
   tlog.stop()
+  #gc.collect()
+  return
 
 def make_data_bam_annotation(args):
   global tlog

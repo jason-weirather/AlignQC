@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import sys, argparse, gzip, re, os, inspect
+from multiprocessing import Pool, cpu_count
 
 #bring in the folder to the path for our utilities
 pythonfolder_loc = "../pylib"
@@ -10,6 +11,18 @@ if cmd_subfolder not in sys.path:
 from Bio.Format.GPD import GPDStream
 from Bio.Range import merge_ranges, GenomicRange, subtract_ranges, BedArrayStream, sort_ranges
 from Bio.Stream import MultiLocusStream
+
+# This script creates reference bed files with locations of mutually exclusive
+# genomic features
+#  1) exons 2) introns 3) intergenic regions
+#
+# It also annotates reads according to these features.
+#
+# PRE:  Requires the read mappings in gpd format
+#       Requires a transcript reference annotation in genepred format
+#       Requires the chromosome lengths in TSV format
+# POST: Output a folder of beds describing the locations of genomic features
+#       Output a file describing the membership of each read
 
 def main(args):
 
@@ -144,7 +157,16 @@ def main(args):
     if not type: continue
     of.write(name+"\t"+type+"\t"+str(exoncount)+"\t"+str(readlen)+"\n")
   of.close()
+
+def generate_locus(mls):
+  for es in mls:
+    [gpds,inbeds] = es.get_payload()
+    if len(gpds) == 0 or len(inbeds) == 0:
+      continue
+    yield es
+
 def annotate_gpds(args,inputbed):
+  p = Pool(processes=args.threads)
   bas = BedArrayStream(sort_ranges(inputbed))
   inf = None
   if re.search('\.gz$',args.reads_gpd): 
@@ -154,18 +176,18 @@ def annotate_gpds(args,inputbed):
   gs = GPDStream(inf)
   mls = MultiLocusStream([gs,bas])
   results = {}
-  for es in mls:
-    [gpds,inbeds] = es.get_payload()
-    if len(gpds) == 0 or len(inbeds) == 0:
-      continue
-    v = annotate_inner(gpds,inbeds)
-    for res in v:
-      results[res[0]]=res[1:]
+  # try and implement as a multiprocessing map function
+  csize = 100 #control how many jobs to send to one thread at a time
+  results2 = p.imap_unordered(func=annotate_inner,iterable=generate_locus(mls),chunksize=csize)
+  for chunk in results2:
+    for res in chunk:
+      results[res[0]] = res[1:]
   inf.close()
   return results
 
-def annotate_inner(gpds,inbeds):
+def annotate_inner(es):
   results = []
+  [gpds,inbeds] = es.get_payload()
   for gpd in gpds:
     orig = gpd.get_length()
     tot = 0
@@ -182,6 +204,7 @@ def do_inputs():
   parser.add_argument('chromosome_lengths',help="reference lengths table")
   parser.add_argument('--output_beds',help="save features")
   parser.add_argument('-o','--output',help="output results")
+  parser.add_argument('--threads',default=cpu_count(),type=int,help="number of threads default cpu_count()")
   args = parser.parse_args()
   return args
   

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import argparse, sys, os, random, inspect, os
+import argparse, sys, os, random, inspect, os, time, gc
 from shutil import rmtree
 from multiprocessing import cpu_count
 from tempfile import mkdtemp, gettempdir
@@ -12,6 +12,7 @@ if cmd_subfolder not in sys.path:
   sys.path.insert(0,cmd_subfolder)
 
 from Bio.Format.Sam import BAMFile
+from Bio.Format.BamIndex import BAMIndexRandomAccessPrimary as BIRAP
 from Bio.Errors import ErrorProfileFactory
 from Bio.Format.Fasta import FastaData
 
@@ -21,40 +22,37 @@ def main(args):
   # make our error profile report
   sys.stderr.write("Reading reference fasta\n")
   ref = FastaData(open(args.reference).read())
-  sys.stderr.write("Reading alignments\n")
+  sys.stderr.write("Reading index\n")
   epf = ErrorProfileFactory()
+  bf = BAMFile(args.input,reference=ref)
+  bind = None
   if args.random:
-    bf = None
     if args.input_index:
-      bf = BAMFile(args.input,reference=ref,index_file=args.input_index)
-      bf.read_index(index_file=args.input_index)
+      bind = BIRAP(index_file=args.input_index,alignment_file=args.input)
     else:
-      bf = BAMFile(args.input,reference=ref)
-      bf.read_index()
-    if not bf.has_index():
-      sys.stderr.write("Random access requires an index be set\n")
+      bind = BIRAP(index_file=args.input+'.bgi',alignment_file=args.input)
     z = 0
     strand = 'target'
     if args.query: strand = 'query'
     con = 0
     while True:
-      rname = random.choice(bf.index.get_names())
+      #rname = random.choice(bf.index.get_names())
       #print rname
-      coord = bf.index.get_longest_target_alignment_coords_by_name(rname)
+      #coord = bf.index.get_longest_target_alignment_coords_by_name(rname)
       #print coord
+      coord = bind.get_random_coord()
       if not coord: continue
       e = bf.fetch_by_coord(coord)
-      if e.is_aligned():
-        epf.add_alignment(e)
-        z+=1
-        if z%100==1:
-          con = epf.get_min_context_count(strand)
-        sys.stderr.write(str(z)+" alignments, "+str(con)+" min context coverage\r")
-        if args.max_alignments <= z: break
-        if args.stopping_point <= con: break
+      if not e.is_aligned(): continue
+      epf.add_alignment(e)
+      z+=1
+      if z%100==1:
+        con = epf.get_min_context_count(strand)
+      sys.stderr.write(str(z)+" alignments, "+str(con)+" min context coverage\r")
+      if args.max_alignments <= z: break
+      if args.stopping_point <= con: break
     
   else:
-    bf = BAMFile(args.input,reference=ref)
     z = 0
     strand = 'target'
     if args.query: strand = 'query'
@@ -69,6 +67,11 @@ def main(args):
         if args.max_alignments <= z: break
         if args.stopping_point <= con: break
   sys.stderr.write("\n")
+  #if bf.index:
+  #  bf.index.destroy()
+  bf = None
+  if bind:
+    bind.destroy()
   sys.stderr.write('working with:'+"\n")
   sys.stderr.write(str(z)+" alignments, "+str(con)+" min context coverage"+"\n")
   epf.write_context_error_report(args.tempdir+'/err.txt',strand)  
@@ -85,6 +88,10 @@ def main(args):
     with open(args.tempdir+"/err.txt") as inf:
       for line in inf:
         of.write(line)
+  epf.close()
+  time.sleep(5)
+  gc.collect()
+  time.sleep(5)
   # Temporary working directory step 3 of 3 - Cleanup
   if not args.specific_tempdir:
     rmtree(args.tempdir)
