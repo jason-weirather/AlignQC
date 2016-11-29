@@ -126,12 +126,12 @@ def do_inputs():
   ### Params for alignment error plot
   label7 = parser.add_argument_group(title="Alignment error parameters")
   label7.add_argument('--alignment_error_scale',nargs=6,type=float,help="<ins_min> <ins_max> <mismatch_min> <mismatch_max> <del_min> <del_max>")
-  label7.add_argument('--alignment_error_max_length',type=int,default=2000000,help="The maximum number of alignment bases to calculate error from")
+  label7.add_argument('--alignment_error_max_length',type=int,default=1000000,help="The maximum number of alignment bases to calculate error from")
   
   ### Params for context error plot
   label8 = parser.add_argument_group(title="Context error parameters")
   label8.add_argument('--context_error_scale',nargs=6,type=float,help="<ins_min> <ins_max> <mismatch_min> <mismatch_max> <del_min> <del_max>")
-  label8.add_argument('--context_error_stopping_point',type=int,default=10000,help="Sample at least this number of each context")
+  label8.add_argument('--context_error_stopping_point',type=int,default=5000,help="Sample at least this number of each context")
 
   ## Params for rarefraction plots
   label9 = parser.add_argument_group(title="Rarefraction plot parameters")
