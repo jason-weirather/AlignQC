@@ -492,7 +492,7 @@ def make_html(args):
     </table>
     <table class="data_table one_half">
       <tr class="rhead"><td colspan="5">Top Transcripts</td></tr>
-      <tr><td>Transcript</td><td>Gene</td><td>Partial</td><td>Full-length</td><td>Total Reads</td></tr>
+      <tr><td>Transcript</td><td>Gene</td><td class="smaller_text">Partial</td><td class="smaller_text">Full- length</td><td class="smaller_text">Total Reads</td></tr>
 '''
     of.write(ostr)
     vs = reversed(sorted(ref_transcripts.keys(),key=lambda x: sum(ref_transcripts[x]))[-5:])
