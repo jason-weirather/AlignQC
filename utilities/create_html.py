@@ -497,7 +497,7 @@ def make_html(args):
     of.write(ostr)
     vs = reversed(sorted(ref_transcripts.keys(),key=lambda x: sum(ref_transcripts[x]))[-5:])
     for v in vs:
-      of.write('      <tr><td class="smaller_text">'+v+'</td><td class="smaller_text">'+tx_to_gene[v]+'</td><td>'+addcommas(ref_transcripts[v][0])+'</td><td>'+addcommas(ref_transcripts[v][1])+'</td><td>'+addcommas(sum(ref_transcripts[v]))+'</td></tr>'+"\n")  
+      of.write('      <tr><td class="smaller_text">'+v+'</td><td class="smaller_text">'+tx_to_gene[v]+'</td><td class="smaller_text">'+addcommas(ref_transcripts[v][0])+'</td><td class="smaller_text">'+addcommas(ref_transcripts[v][1])+'</td><td class="smaller_text">'+addcommas(sum(ref_transcripts[v]))+'</td></tr>'+"\n")  
     ostr = '''
     </table>
   </div>
