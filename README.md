@@ -1,4 +1,8 @@
 # AlignQC
+
+See wiki for the most up-to-date manual. 
+[https://github.com/jason-weirather/AlignQC/wiki](https://github.com/jason-weirather/AlignQC/wiki)
+
 **Generate a report** on sequencing alignments to understand read alignments vs read sizes, error patterns in reads, annotations and rarefractions.
 
 **Share your reports** with anyone who has an internet browser.
