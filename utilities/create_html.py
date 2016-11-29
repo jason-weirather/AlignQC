@@ -497,7 +497,7 @@ def make_html(args):
     of.write(ostr)
     vs = reversed(sorted(ref_transcripts.keys(),key=lambda x: sum(ref_transcripts[x]))[-5:])
     for v in vs:
-      of.write('      <tr><td>'+v+'</td><td>'+tx_to_gene[v]+'</td><td>'+addcommas(ref_transcripts[v][0])+'</td><td>'+addcommas(ref_transcripts[v][1])+'</td><td>'+addcommas(sum(ref_transcripts[v]))+'</td></tr>'+"\n")  
+      of.write('      <tr><td class="smaller_text">'+v+'</td><td class="smaller_text">'+tx_to_gene[v]+'</td><td>'+addcommas(ref_transcripts[v][0])+'</td><td>'+addcommas(ref_transcripts[v][1])+'</td><td>'+addcommas(sum(ref_transcripts[v]))+'</td></tr>'+"\n")  
     ostr = '''
     </table>
   </div>
@@ -676,12 +676,19 @@ def make_html(args):
   # 6. ERROR PATTERN
 
   # We need a reference in order to do error pattern analysis
-  if args.reference:
+  if args.reference or args.annotation:
     ostr = '''
 <div class="subject_title">Error pattern analysis &#xA0;&#xA0;&#xA0;&#xA0;<span class="highlight">
 '''
-    #if args.reference
-    of.write(ostr+"\n")
+    of.write(ostr)
+  if not args.reference and args.annotation:
+    # We don't have any information to fill in the header about errror rates
+    ostr = '''
+</span></div>
+'''
+    of.write(ostr)
+  if args.reference:
+    # We do have error rate information
     error_rate = perc(e['ANY_ERROR'],e['ALIGNMENT_BASES'],3)
     of.write(error_rate)
     ostr='''
@@ -727,12 +734,27 @@ def make_html(args):
     of.write(homopolymer_insertion_string+"\n")
     ostr = '''
   </table>
-  <div class="one_half left">
+  <div class="full_length left">
     <div class="rhead">Alignment-based error rates [<a download="alignment_error_plot.pdf" href="plots/alignment_error_plot.pdf">pdf</a>]</div>
     <img class="square_image" src="plots/alignment_error_plot.png" alt="alignment_error_plot_png" />
   </div>
 </div>
 <div class="clear"></div>
+'''
+    of.write(ostr)
+  if args.annotation:
+    # We can output the junction variance plot
+    ostr = '''
+  <div class="left full_length">
+    <div class="rhead">Distance of observed junctions from reference junctions [<a download="junvar.pdf"  href="plots/junvar.pdf">pdf</a>]</div>
+    <img src="plots/junvar.png" alt="junvar_png" />
+  </div>
+  <div class="clear"></div>
+'''
+    of.write(ostr)
+  #close error box if we have a reason to be here
+  if args.reference or args.annotation:
+    ostr = '''
 <hr />
 '''
     #if args.reference
@@ -825,6 +847,10 @@ def make_html(args):
   <tr>
     <td>Bias table:</td>
     <td class="raw_files"><a download="bias_table.txt.gz" href="data/bias_table.txt.gz">bias_table.txt.gz</a></td>
+  </tr>
+  <tr>
+    <td>Junction variance table:</td>
+    <td class="raw_files"><a download="junvar.txt" href="data/junvar.txt">junvar.txt</a></td>
   </tr>
 '''
     # if args.annotation

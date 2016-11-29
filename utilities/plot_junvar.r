@@ -7,7 +7,7 @@ make_image<-function(d,outfile,input_width,text_adjust) {
   if(filex=="pdf") {
     pdf(outfile,bg="#FFFFFF",width=12,height=7)
   } else if (filex=="png") {
-    png(outfile,bg="#FFFFFF")
+    png(outfile,bg="#FFFFFF",width=823,height=480,units="px")
   } else {
       stop("Unsupported type for output file.\n",call.=FALSE)
   }

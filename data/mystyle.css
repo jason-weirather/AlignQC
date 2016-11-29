@@ -7,6 +7,10 @@ body {
   margin:20px;
 }
 
+.smaller_text {
+  font-size:75%;
+}
+
 .result_block {
   width: 850px;
 }

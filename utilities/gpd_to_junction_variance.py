@@ -2,14 +2,16 @@
 import argparse, sys, os, gzip
 from shutil import rmtree
 from tempfile import mkdtemp, gettempdir
+from time import sleep
+from multiprocessing import cpu_count, Pool
 
 from Bio.Format.GPD import GPD, GPDStream
-from Bio.Range import GenomicRange, sort_ranges, BedArrayStream
+from Bio.Range import GenomicRange, sort_ranges, BedArrayStream, BedStream
 from Bio.Stream import MultiLocusStream
 
-def main():
-  #do our inputs
-  args = do_inputs()
+rcnt = 0
+
+def main(args):
 
   # Start by reading in our reference GPD
   exon_start_strings = set()
@@ -22,7 +24,7 @@ def main():
   z = 0
   for line in inf:
     z += 1
-    if z%1000 == 0: sys.stderr.write("reads: "+str(z)+" starts: "+str(len(exon_start_strings))+" ends: "+str(len(exon_end_strings))+"   \r")
+    if z%1000 == 0: sys.stderr.write("ref transcripts: "+str(z)+" starts: "+str(len(exon_start_strings))+" ends: "+str(len(exon_end_strings))+"           \r")
     gpd = GPD(line)
     if gpd.get_exon_count() < 2: continue
     for j in gpd.junctions:
@@ -34,10 +36,27 @@ def main():
   sys.stderr.write("finding start windows\n")
   starts = get_search_ranges_from_strings(exon_start_strings,args)
   sh = BedArrayStream(starts)
+  ofst = open(args.tempdir+'/starts.bed','w')
+  for v in sh:
+    ofst.write("\t".join([str(x) for x in v.get_bed_array()]+[v.get_payload().get_range_string()])+"\n")
+  ofst.close()
+  starts = None
+  sh = None
   sys.stderr.write("finding end windows\n")
   ends = get_search_ranges_from_strings(exon_end_strings,args)
   eh = BedArrayStream(ends)
-  
+  ofen = open(args.tempdir+'/ends.bed','w')
+  for v in eh:
+    ofen.write("\t".join([str(x) for x in v.get_bed_array()]+[v.get_payload().get_range_string()])+"\n")  
+  ofen.close()
+  # switch to file based operations to save some memory
+  ends = None
+  eh = None
+  sleep(10) # give garbage collection time to flush these big memory objects
+  sinf = open(args.tempdir+'/starts.bed')
+  einf = open(args.tempdir+'/ends.bed')
+  sh = BedStream(sinf)
+  eh = BedStream(einf)
   # now stream in our reads
   sys.stderr.write("working through reads\n")
   inf = sys.stdin
@@ -47,31 +66,57 @@ def main():
   gh = GPDStream(inf)
   mls = MultiLocusStream([gh,sh,eh])
   z = 0
+  global rcnt
   rcnt = 0
-  start_distances = []
-  end_distances = []
+  #start_distances = []
+  #end_distances = []
   buffer = []
   max_buffer = 100
-  for es in mls:
-    z += 1
-    rcnt += len(es.get_payload()[0])
-    if len(es.get_payload()[0]) == 0: continue
-    if z%10 > 0: sys.stderr.write("reads: "+str(rcnt)+"   \r")
-    r = process_locus(es,args)
-    start_distances += r[0]
-    end_distances += r[1]
+  tos = gzip.open(args.tempdir+'/starts.txt.gz','w')
+  toe = gzip.open(args.tempdir+'/ends.txt.gz','w')
+  p = Pool(processes=args.threads)
+  csize=10
+  results = p.imap_unordered(process_locus,gen_locus(mls,args),chunksize=csize)
+  for r in results:
+    if len(r[0]) > 0:
+      tos.write("\n".join([str(x) for x in r[0]])+"\n")
+    if len(r[1]) > 0:
+      toe.write("\n".join([str(x) for x in r[1]])+"\n")
+  tos.close()
+  toe.close()
+  #sys.exit()
+  #for es in mls:
+  #  z += 1
+  #  if z%1000 == 0: sys.stderr.write(es.get_range_string()+" locus: "+str(z)+" reads: "+str(rcnt)+"        \r")
+  #  if len(es.get_payload()[0]) == 0: continue
+  #  rcnt += len(es.get_payload()[0])
+  #  r = process_locus(es,args)
+  #  tos.write("\n".join([str(x) for x in r[0]])+"\n")
+  #  toe.write("\n".join([str(x) for x in r[1]])+"\n")
+  #  #start_distances += r[0]
+  #  #end_distances += r[1]
+  #tos.close()
+  #toe.close()
   inf.close()
   sys.stderr.write("\n")
 
   # now we have the distance, we don't actually know if a start is  a start or an end from what have
   sys.stderr.write("distances are ready to be read\n")
   distances = {}
-  for d in start_distances:
+  sys.stderr.write("Reading start distances\n")
+  inf = gzip.open(args.tempdir+'/starts.txt.gz')
+  for line in inf:
+    d = int(line.rstrip())
     if d not in distances: distances[d] = 0
     distances[d] += 1
-  for d in end_distances:
+  inf.close()
+  sys.stderr.write("Reading end distances\n")
+  inf = gzip.open(args.tempdir+'/ends.txt.gz')
+  for line in inf:
+    d = int(line.rstrip())
     if d not in distances: distances[d] = 0
     distances[d] += 1
+  inf.close()
   # now output results
   of = sys.stdout
   if args.output: of = open(args.output,'w')
@@ -83,19 +128,37 @@ def main():
   if not args.specific_tempdir:
     rmtree(args.tempdir)
 
+def gen_locus(mls,args):
+  global rcnt
+  z = 0
+  for es in mls:
+    z += 1
+    if z%1000 == 0: sys.stderr.write(es.get_range_string()+" locus: "+str(z)+" reads: "+str(rcnt)+"        \r")
+    if len(es.get_payload()[0]) == 0: continue
+    rcnt += len(es.get_payload()[0])
+    #rcnt += len(es.get_payload()[0])
+    yield [es,args]
+
 class Queue:
   def __init__(self,val):
     self.val = [val]
   def get(self):
     return self.pop(0)
 
-def process_locus(es,args):
+def process_locus(vals):
+    (es,args) = vals
     out_start_distances = []
     out_end_distances = []
     streams = es.get_payload()
     reads = streams[0]
     starts = streams[1]
+    for i in range(0,len(starts)):
+      v = starts[i].get_payload()
+      starts[i].set_payload(GenomicRange(range_string=v))
     ends = streams[2]
+    for i in range(0,len(ends)):
+      v = ends[i].get_payload()
+      ends[i].set_payload(GenomicRange(range_string=v))
     #if len(starts) == 0 and len(ends) == 0: continue
     for read in reads:
       if read.get_exon_count() < 2: continue
@@ -104,6 +167,8 @@ def process_locus(es,args):
         ex_start = j.right
         ex_end = j.left
         # we can look for evidence for each
+        #print [x.get_payload() for x in starts ]
+        #sys.exit()
         evstart = [x.get_payload().start-ex_start.start for x in starts if x.overlaps(ex_start) and x.get_payload().distance(ex_start) <= args.window]
         if len(evstart) > 0:
           # get the best distance
@@ -143,7 +208,7 @@ def do_inputs():
   parser.add_argument('input',help="INPUT reads GPD or '-' for STDIN")
   parser.add_argument('-r','--reference',required=True,help="Reference GPD")
   parser.add_argument('-o','--output',help="OUTPUTFILE or STDOUT if not set")
-  #parser.add_argument('--threads',type=int,default=cpu_count(),help="INT number of threads to run. Default is system cpu count")
+  parser.add_argument('--threads',type=int,default=cpu_count(),help="INT number of threads to run. Default is system cpu count")
   parser.add_argument('-w','--window',type=int,default=30,help="Window for how far to search for a nearby reference")
 
   # Temporary working directory step 1 of 3 - Definition
@@ -173,5 +238,14 @@ def setup_tempdir(args):
     sys.exit()
   return 
 
+def external_cmd(cmd):
+  cache_argv = sys.argv
+  sys.argv = cmd.split()
+  args = do_inputs()
+  main(args)
+  sys.argv = cache_argv
+
 if __name__=="__main__":
-  main()
+  args = do_inputs()
+  main(args)
+

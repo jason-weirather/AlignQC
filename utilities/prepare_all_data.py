@@ -26,6 +26,7 @@ import  get_depth_subset
 import  annotated_length_analysis
 import  gpd_annotation_to_rarefraction
 import  annotated_read_bias_analysis
+import  gpd_to_junction_variance
 
 #bring in the folder to the path for our utilities
 #pythonfolder_loc = "../pyutil"
@@ -381,6 +382,7 @@ def make_data_bam_reference(args):
   bam_to_context_error_plot.external_cmd(cmd)
   tlog.write(cmd)
   tlog.stop()
+  time.sleep(8)
   #gc.collect()
 
   tlog.start("alignment based error")
@@ -399,6 +401,7 @@ def make_data_bam_reference(args):
   bam_to_alignment_error_plot.external_cmd(cmd)
   tlog.write(cmd)
   tlog.stop()
+  time.sleep(8)
   #gc.collect()
   return
 
@@ -418,7 +421,7 @@ def make_data_bam_annotation(args):
   annotate_from_genomic_features.external_cmd(cmd)
   tlog.write(cmd)
   tlog.stop()
-
+  time.sleep(8)
   tlog.start("get per-exon depth")
   # 2. Get depth distributions for each feature subset
   # now get depth subsets
@@ -504,6 +507,7 @@ def make_data_bam_annotation(args):
   gpd_annotate.external_cmd(cmd)
   tlog.write(cmd)
   tlog.stop()
+  time.sleep(8)
 
   tlog.start("plot by transcript length png")
   # 6. Make plots of the transcript lengths
@@ -635,7 +639,8 @@ def make_data_bam_annotation(args):
         args.annotation+' '+ args.tempdir+'/data/annotbest.txt.gz '+\
         '-o '+args.tempdir+'/data/bias_table.txt.gz '+\
         '--output_counts '+args.tempdir+'/data/bias_counts.txt '+\
-        '--allow_overflowed_matches '
+        '--allow_overflowed_matches '+\
+        '--specific_tempdir '+args.tempdir+'/temp'
   sys.stderr.write(cmd+"\n")
   annotated_read_bias_analysis.external_cmd(cmd)
   tlog.write(cmd)
@@ -655,6 +660,35 @@ def make_data_bam_annotation(args):
         args.tempdir+'/plots/bias.pdf'
   sys.stderr.write(cmd+"\n")
   mycall(cmd,args.tempdir+'/logs/bias_pdf.log')
+  tlog.write(cmd)
+  tlog.stop()
+
+  tlog.start("Prepare junction variance data")
+  # 13. Get distances of observed junctions from reference junctions
+  cmd = udir+'/gpd_to_junction_variance.py -r '+\
+        args.annotation+' '+\
+        args.tempdir+'/data/best.sorted.gpd.gz '+\
+        '--specific_tempdir '+args.tempdir+'/temp '+\
+        '-o '+args.tempdir+'/data/junvar.txt'
+  sys.stderr.write(cmd+"\n")
+  gpd_to_junction_variance.external_cmd(cmd)
+  tlog.write(cmd)
+  tlog.stop()
+
+  tlog.start("plot junvar png")
+  # 14. Junction distances
+  cmd = args.rscript_path+' '+udir+'/plot_junvar.r '+args.tempdir+'/data/junvar.txt '+\
+        args.tempdir+'/plots/junvar.png'
+  sys.stderr.write(cmd+"\n")
+  mycall(cmd,args.tempdir+'/logs/junvar_png.log')
+  tlog.write(cmd)
+  tlog.stop()
+
+  tlog.start("plot junvar pdf")
+  cmd = args.rscript_path+' '+udir+'/plot_junvar.r '+args.tempdir+'/data/junvar.txt '+\
+        args.tempdir+'/plots/junvar.pdf'
+  sys.stderr.write(cmd+"\n")
+  mycall(cmd,args.tempdir+'/logs/junvar_pdf.log')
   tlog.write(cmd)
   tlog.stop()
 

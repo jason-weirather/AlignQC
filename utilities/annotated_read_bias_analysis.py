@@ -3,6 +3,7 @@ import sys, argparse, re, gzip, os, inspect
 from subprocess import PIPE, Popen
 from multiprocessing import Pool, cpu_count
 from tempfile import mkdtemp, gettempdir
+from shutil import rmtree
 
 #bring in the folder to the path for our utilities
 pythonfolder_loc = "../pylib"
@@ -88,6 +89,9 @@ def main(args):
     of.write(str(tot)+"\t"+str(read_total)+"\n")
     of.close()
   sys.stderr.write(str(tot)+" total transcripts \t"+str(read_total)+" total reads\n")
+
+  if not args.specific_tempdir:
+    rmtree(args.tempdir)
 
 def spawn_jobs(mls,args):
   z = 0
