@@ -371,6 +371,7 @@ def make_data_bam_reference(args):
   cmd = udir+'/bam_to_context_error_plot.py '+args.input+' -r '+args.reference+' --target --output_raw '+args.tempdir+'/data/context_error_data.txt -o '+args.tempdir+'/plots/context_plot.png '+args.tempdir+'/plots/context_plot.pdf'
   cmd += ' --rscript_path '+args.rscript_path+' '
   cmd += ' --random '
+  cmd += ' --specific_tempdir '+args.tempdir+'/temp '
   if args.context_error_scale:
     cmd += ' --scale '+' '.join([str(x) for x in args.context_error_scale])
   if args.context_error_stopping_point:
@@ -382,7 +383,7 @@ def make_data_bam_reference(args):
   bam_to_context_error_plot.external_cmd(cmd)
   tlog.write(cmd)
   tlog.stop()
-  time.sleep(8)
+  time.sleep(3)
   #gc.collect()
 
   tlog.start("alignment based error")
@@ -396,12 +397,13 @@ def make_data_bam_reference(args):
   if indfile:
     cmd += ' --input_index '+indfile+' '
   cmd += ' --random '
+  cmd += ' --specific_tempdir '+args.tempdir+'/temp '
   sys.stderr.write("Making alignment error plot\n")
   sys.stderr.write(cmd+"\n")
   bam_to_alignment_error_plot.external_cmd(cmd)
   tlog.write(cmd)
   tlog.stop()
-  time.sleep(8)
+  time.sleep(3)
   #gc.collect()
   return
 
@@ -421,7 +423,7 @@ def make_data_bam_annotation(args):
   annotate_from_genomic_features.external_cmd(cmd)
   tlog.write(cmd)
   tlog.stop()
-  time.sleep(8)
+  time.sleep(3)
   tlog.start("get per-exon depth")
   # 2. Get depth distributions for each feature subset
   # now get depth subsets
@@ -507,7 +509,7 @@ def make_data_bam_annotation(args):
   gpd_annotate.external_cmd(cmd)
   tlog.write(cmd)
   tlog.stop()
-  time.sleep(8)
+  time.sleep(3)
 
   tlog.start("plot by transcript length png")
   # 6. Make plots of the transcript lengths
