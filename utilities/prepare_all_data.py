@@ -671,7 +671,8 @@ def make_data_bam_annotation(args):
         args.annotation+' '+\
         args.tempdir+'/data/best.sorted.gpd.gz '+\
         '--specific_tempdir '+args.tempdir+'/temp '+\
-        '-o '+args.tempdir+'/data/junvar.txt'
+        '-o '+args.tempdir+'/data/junvar.txt '+\
+        '--threads '+str(args.threads)
   sys.stderr.write(cmd+"\n")
   gpd_to_junction_variance.external_cmd(cmd)
   tlog.write(cmd)
