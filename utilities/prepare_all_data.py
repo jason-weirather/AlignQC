@@ -417,11 +417,12 @@ def make_data_bam_annotation(args):
   # Stores the feature bed files in a beds folder
   cmd = udir+'/annotate_from_genomic_features.py --output_beds '+args.tempdir+'/data/beds '
   cmd += args.tempdir+'/data/best.sorted.gpd.gz '+args.annotation+' '
-  cmd += args.tempdir+'/data/chrlens.txt -o '+args.tempdir+'/data/read_genomic_features.txt.gz'
+  cmd += args.tempdir+'/data/chrlens.txt -o '+args.tempdir+'/data/read_genomic_features.txt.gz '
+  cmd += ' --threads '+str(args.threads)
   sys.stderr.write("Finding genomic features and assigning reads membership\n")
   sys.stderr.write(cmd+"\n")
-  annotate_from_genomic_features.external_cmd(cmd)
   tlog.write(cmd)
+  annotate_from_genomic_features.external_cmd(cmd)
   tlog.stop()
   time.sleep(3)
   tlog.start("get per-exon depth")
@@ -633,12 +634,49 @@ def make_data_bam_annotation(args):
       tlog.write(cmd)
   tlog.stop()
 
+  ## For the bias data we need to downsample
+  ## Using some system utilities to accomplish this
+  sys.stderr.write("downsampling mappings for bias calculation\n")
+  cmd0 = 'zcat'
+  cmd1 = 'sort -R --parallel='+str(args.threads)+' -S1G -T '+args.tempdir+'/temp'
+  cmd2 = 'head -n '+str(args.max_bias_data)
+  cmd3 = 'sort -k3,3 -k5,5n -k 6,6n --parallel='+str(args.threads)+' -S1G -T '+args.tempdir+'/temp'
+  inf = open(args.tempdir+'/data/best.sorted.gpd.gz')
+  of = gzip.open(args.tempdir+'/temp/best.random.sorted.gpd.gz','w')
+  p0 = Popen(cmd0.split(),stdin=inf,stdout=PIPE)
+  p1 = Popen(cmd1.split(),stdin=p0.stdout,stdout=PIPE)
+  p2 = Popen(cmd2.split(),stdin=p1.stdout,stdout=PIPE)
+  p3 = Popen(cmd3.split(),stdin=p2.stdout,stdout=PIPE)
+  for line in p3.stdout:
+    of.write(line)
+  p3.communicate()
+  p2.communicate()
+  p1.communicate()
+  p0.communicate()
+  of.close()
+  inf.close()
+  # now downsample annotations
+  sys.stderr.write("Downsampling annotations for bias\n")
+  inf = gzip.open(args.tempdir+'/temp/best.random.sorted.gpd.gz')
+  rnames = set()
+  for line in inf:
+    f = line.rstrip().split("\t")
+    rnames.add(f[0])
+  inf.close()
+  of = gzip.open(args.tempdir+'/temp/annotbest.random.txt.gz','w')
+  inf = gzip.open(args.tempdir+'/data/annotbest.txt.gz')
+  for line in inf:
+    f = line.rstrip().split("\t")
+    if f[1] in rnames: of.write(line)
+  inf.close()
+  of.close()
+
   tlog.start("use annotations to check for 5' to 3' biase")
   # 11. Use annotation outputs to check for  bias
   sys.stderr.write("Prepare bias data\n")
   cmd = udir+'/annotated_read_bias_analysis.py '+\
-        args.tempdir+'/data/best.sorted.gpd.gz '+\
-        args.annotation+' '+ args.tempdir+'/data/annotbest.txt.gz '+\
+        args.tempdir+'/temp/best.random.sorted.gpd.gz '+\
+        args.annotation+' '+ args.tempdir+'/temp/annotbest.random.txt.gz '+\
         '-o '+args.tempdir+'/data/bias_table.txt.gz '+\
         '--output_counts '+args.tempdir+'/data/bias_counts.txt '+\
         '--allow_overflowed_matches '+\
@@ -669,7 +707,7 @@ def make_data_bam_annotation(args):
   # 13. Get distances of observed junctions from reference junctions
   cmd = udir+'/gpd_to_junction_variance.py -r '+\
         args.annotation+' '+\
-        args.tempdir+'/data/best.sorted.gpd.gz '+\
+        args.tempdir+'/temp/best.random.sorted.gpd.gz '+\
         '--specific_tempdir '+args.tempdir+'/temp '+\
         '-o '+args.tempdir+'/data/junvar.txt '+\
         '--threads '+str(args.threads)
