@@ -1,14 +1,9 @@
 #!/usr/bin/env python
-import sys, argparse, re, gzip, inspect, os
+"""Get the bed depths for each feature exon intron intergenic"""
+import sys, argparse, re, gzip
 
-#bring in the folder to the path for our utilities
-pythonfolder_loc = "../pylib"
-cmd_subfolder = os.path.realpath(os.path.abspath(os.path.join(os.path.split(inspect.getfile(inspect.currentframe() ))[0],pythonfolder_loc)))
-if cmd_subfolder not in sys.path:
-  sys.path.insert(0,cmd_subfolder)
-
-from Bio.Range import BedStream, union_range_array
-from Bio.Stream import MultiLocusStream
+from seqtools.range.multi import BedStream, intersect_range_array
+from seqtools.stream import MultiLocusStream
 
 def main(args):
 
@@ -34,12 +29,12 @@ def main(args):
   bs2 = BedStream(inf2)
   mls = MultiLocusStream([bs1,bs2])
   for overlapped in mls:
-    [b1s,b2s] = overlapped.get_payload()
+    [b1s,b2s] = overlapped.payload
     if len(b1s)==0 or len(b2s)==0: continue
     for b1 in b1s:
-      m = union_range_array(b1,b2s,is_sorted=True)
+      m = intersect_range_array(b1,b2s,is_sorted=True)
       for rng in m:
-        of.write("\t".join([str(x) for x in rng.get_bed_array()])+"\t"+b1.get_payload()+"\n")
+        of.write("\t".join([str(x) for x in rng.get_bed_array()])+"\t"+b1.payload+"\n")
   of.close()
 
 def external_cmd(cmd):

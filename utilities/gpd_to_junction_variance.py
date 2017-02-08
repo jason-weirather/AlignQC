@@ -1,13 +1,15 @@
 #!/usr/bin/env python
+"""measure distances of junctions to references junctions"""
 import argparse, sys, os, gzip
 from shutil import rmtree
 from tempfile import mkdtemp, gettempdir
 from time import sleep
 from multiprocessing import cpu_count, Pool
 
-from Bio.Format.GPD import GPD, GPDStream
-from Bio.Range import GenomicRange, sort_ranges, BedArrayStream, BedStream
-from Bio.Stream import MultiLocusStream
+from seqtools.format.gpd import GPD, GPDStream
+from seqtools.range import GenomicRange, GenomicRangeFromString
+from seqtools.range.multi import sort_ranges, BedArrayStream, BedStream
+from seqtools.stream import MultiLocusStream
 
 rcnt = 0
 
@@ -38,7 +40,7 @@ def main(args):
   sh = BedArrayStream(starts)
   ofst = open(args.tempdir+'/starts.bed','w')
   for v in sh:
-    ofst.write("\t".join([str(x) for x in v.get_bed_array()]+[v.get_payload().get_range_string()])+"\n")
+    ofst.write("\t".join([str(x) for x in v.get_bed_array()]+[v.payload.get_range_string()])+"\n")
   ofst.close()
   starts = None
   sh = None
@@ -47,7 +49,7 @@ def main(args):
   eh = BedArrayStream(ends)
   ofen = open(args.tempdir+'/ends.bed','w')
   for v in eh:
-    ofen.write("\t".join([str(x) for x in v.get_bed_array()]+[v.get_payload().get_range_string()])+"\n")  
+    ofen.write("\t".join([str(x) for x in v.get_bed_array()]+[v.payload.get_range_string()])+"\n")  
   ofen.close()
   # switch to file based operations to save some memory
   ends = None
@@ -84,19 +86,6 @@ def main(args):
       toe.write("\n".join([str(x) for x in r[1]])+"\n")
   tos.close()
   toe.close()
-  #sys.exit()
-  #for es in mls:
-  #  z += 1
-  #  if z%1000 == 0: sys.stderr.write(es.get_range_string()+" locus: "+str(z)+" reads: "+str(rcnt)+"        \r")
-  #  if len(es.get_payload()[0]) == 0: continue
-  #  rcnt += len(es.get_payload()[0])
-  #  r = process_locus(es,args)
-  #  tos.write("\n".join([str(x) for x in r[0]])+"\n")
-  #  toe.write("\n".join([str(x) for x in r[1]])+"\n")
-  #  #start_distances += r[0]
-  #  #end_distances += r[1]
-  #tos.close()
-  #toe.close()
   inf.close()
   sys.stderr.write("\n")
 
@@ -134,9 +123,8 @@ def gen_locus(mls,args):
   for es in mls:
     z += 1
     if z%1000 == 0: sys.stderr.write(es.get_range_string()+" locus: "+str(z)+" reads: "+str(rcnt)+"        \r")
-    if len(es.get_payload()[0]) == 0: continue
-    rcnt += len(es.get_payload()[0])
-    #rcnt += len(es.get_payload()[0])
+    if len(es.payload[0]) == 0: continue
+    rcnt += len(es.payload[0])
     yield [es,args]
 
 class Queue:
@@ -149,16 +137,16 @@ def process_locus(vals):
     (es,args) = vals
     out_start_distances = []
     out_end_distances = []
-    streams = es.get_payload()
+    streams = es.payload
     reads = streams[0]
     starts = streams[1]
     for i in range(0,len(starts)):
-      v = starts[i].get_payload()
-      starts[i].set_payload(GenomicRange(range_string=v))
+      v = starts[i].payload
+      starts[i].set_payload(GenomicRangeFromString(v))
     ends = streams[2]
     for i in range(0,len(ends)):
-      v = ends[i].get_payload()
-      ends[i].set_payload(GenomicRange(range_string=v))
+      v = ends[i].payload
+      ends[i].set_payload(GenomicRangeFromString(v))
     #if len(starts) == 0 and len(ends) == 0: continue
     for read in reads:
       if read.get_exon_count() < 2: continue
@@ -167,9 +155,8 @@ def process_locus(vals):
         ex_start = j.right
         ex_end = j.left
         # we can look for evidence for each
-        #print [x.get_payload() for x in starts ]
         #sys.exit()
-        evstart = [x.get_payload().start-ex_start.start for x in starts if x.overlaps(ex_start) and x.get_payload().distance(ex_start) <= args.window]
+        evstart = [x.payload.start-ex_start.start for x in starts if x.overlaps(ex_start) and x.payload.distance(ex_start) <= args.window]
         if len(evstart) > 0:
           # get the best distance
           min_dist = args.window+10
@@ -178,8 +165,9 @@ def process_locus(vals):
             if abs(v) < min_dist: 
               min_dist = abs(v)
               num = v
-          out_start_distances.append(num)
-        evend = [ex_end.end-x.get_payload().end for x in ends if x.overlaps(ex_end) and x.get_payload().distance(ex_end) <= args.window]
+          if num:
+            out_start_distances.append(num)
+        evend = [ex_end.end-x.payload.end for x in ends if x.overlaps(ex_end) and x.payload.distance(ex_end) <= args.window]
         if len(evend) > 0:
           # get the best distance
           min_dist = args.window+10
@@ -188,13 +176,14 @@ def process_locus(vals):
             if abs(v) < min_dist: 
               min_dist = abs(v)
               num = v
-          out_end_distances.append(num)
+          if num:
+            out_end_distances.append(num)
     return [out_start_distances,out_end_distances]
 
 def get_search_ranges_from_strings(position_strings,args):
   results = []
   for pstr in position_strings:
-    rng = GenomicRange(range_string=pstr)
+    rng = GenomicRangeFromString(pstr)
     rngw = rng.copy()
     rngw.start = max(rng.start-args.window,1)
     rngw.end =rng.start+args.window

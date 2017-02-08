@@ -1,28 +1,23 @@
 #!/usr/bin/env python
-import sys, argparse, gzip, re, os, inspect
+"""This script creates reference bed files with locations of mutually exclusive
+   genomic features
+   1) exons 2) introns 3) intergenic regions
+ 
+   It also annotates reads according to these features.
+ 
+   PRE:  Requires the read mappings in gpd format
+        Requires a transcript reference annotation in genepred format
+        Requires the chromosome lengths in TSV format
+   POST: Output a folder of beds describing the locations of genomic features
+        Output a file describing the membership of each read
+"""
+import sys, argparse, gzip, re, os, inspect, itertools
 from multiprocessing import Pool, cpu_count
 
-#bring in the folder to the path for our utilities
-pythonfolder_loc = "../pylib"
-cmd_subfolder = os.path.realpath(os.path.abspath(os.path.join(os.path.split(inspect.getfile(inspect.currentframe() ))[0],pythonfolder_loc)))
-if cmd_subfolder not in sys.path:
-  sys.path.insert(0,cmd_subfolder)
-
-from Bio.Format.GPD import GPDStream
-from Bio.Range import merge_ranges, GenomicRange, subtract_ranges, BedArrayStream, sort_ranges
-from Bio.Stream import MultiLocusStream
-
-# This script creates reference bed files with locations of mutually exclusive
-# genomic features
-#  1) exons 2) introns 3) intergenic regions
-#
-# It also annotates reads according to these features.
-#
-# PRE:  Requires the read mappings in gpd format
-#       Requires a transcript reference annotation in genepred format
-#       Requires the chromosome lengths in TSV format
-# POST: Output a folder of beds describing the locations of genomic features
-#       Output a file describing the membership of each read
+from seqtools.format.gpd import GPDStream
+from seqtools.range.multi import merge_ranges, subtract_ranges, BedArrayStream, sort_ranges
+from seqtools.range import GenomicRange
+from seqtools.stream import MultiLocusStream
 
 def main(args):
 
@@ -35,8 +30,8 @@ def main(args):
     inf = open(args.chromosome_lengths)
   for line in inf:
     f = line.rstrip().split("\t")
-    chrlens[f[0]] = f[1]
-    chrbed.append(GenomicRange(f[0],1,f[1]))
+    chrlens[f[0]] = int(f[1])
+    chrbed.append(GenomicRange(f[0],1,int(f[1])))
   inf.close()  
 
   inf = None
@@ -49,8 +44,8 @@ def main(args):
     inf = open(args.annotation_gpd)
   gs = GPDStream(inf)
   for gpd in gs:
-    exonbed += [x.get_range() for x in gpd.exons]
-    txbed.append(gpd.get_range())
+    exonbed += [x.range for x in gpd.exons]
+    txbed.append(gpd.range)
   inf.close()  
   sys.stderr.write("Merging "+str(len(txbed))+" transcripts\n")
   txbed = merge_ranges(txbed)
@@ -58,7 +53,7 @@ def main(args):
   sys.stderr.write("Finding intergenic\n")
   intergenicbed = subtract_ranges(chrbed,txbed)
   sys.stderr.write("Found "+str(len(intergenicbed))+" intergenic regions\n")
-  intergenicbp = sum([x.length() for x in intergenicbed])
+  intergenicbp = sum([x.length for x in intergenicbed])
   sys.stderr.write("Intergenic size: "+str(intergenicbp)+"\n")
   sys.stderr.write("Merging "+str(len(exonbed))+" exons\n")
   exonbed = merge_ranges(exonbed)
@@ -67,13 +62,13 @@ def main(args):
   intronbed = subtract_ranges(txbed,exonbed)
   sys.stderr.write("Found "+str(len(intronbed))+" introns\n")
   
-  chrbp = sum([x.length() for x in chrbed])
+  chrbp = sum([x.length for x in chrbed])
   sys.stderr.write("Genome size: "+str(chrbp)+"\n")
-  txbp = sum([x.length() for x in txbed])
+  txbp = sum([x.length for x in txbed])
   sys.stderr.write("Tx size: "+str(txbp)+"\n")
-  exonbp = sum([x.length() for x in exonbed])
+  exonbp = sum([x.length for x in exonbed])
   sys.stderr.write("Exon size: "+str(exonbp)+"\n")
-  intronbp = sum([x.length() for x in intronbed])
+  intronbp = sum([x.length for x in intronbed])
   sys.stderr.write("Intron size: "+str(intronbp)+"\n")
   #sys.stderr.write(str(txbp+intergenicbp)+"\n")
 
@@ -96,12 +91,14 @@ def main(args):
   else:
     inf = open(args.reads_gpd)
   reads = {}
+
   gs = GPDStream(inf)
   for gpd in gs:
-    reads[gpd.get_gene_name()] = {}
-
+    reads[gpd.gene_name] = {}
   sys.stderr.write("Checking "+str(len(reads.keys()))+" Aligned Reads\n")
+
   #now we know all features we can annotate reads
+
   sys.stderr.write("Read through our reads and bed entries\n")
   sys.stderr.write("Annotate intron\n")
   intron = annotate_gpds(args,intronbed)
@@ -160,13 +157,14 @@ def main(args):
 
 def generate_locus(mls):
   for es in mls:
-    [gpds,inbeds] = es.get_payload()
+    [gpds,inbeds] = es.payload
     if len(gpds) == 0 or len(inbeds) == 0:
       continue
     yield es
 
 def annotate_gpds(args,inputbed):
-  p = Pool(processes=args.threads)
+  if args.threads > 1:
+    p = Pool(processes=args.threads)
   bas = BedArrayStream(sort_ranges(inputbed))
   inf = None
   if re.search('\.gz$',args.reads_gpd): 
@@ -178,7 +176,10 @@ def annotate_gpds(args,inputbed):
   results = {}
   # try and implement as a multiprocessing map function
   csize = 100 #control how many jobs to send to one thread at a time
-  results2 = p.imap_unordered(func=annotate_inner,iterable=generate_locus(mls),chunksize=csize)
+  if args.threads > 1:
+    results2 = p.imap_unordered(func=annotate_inner,iterable=generate_locus(mls),chunksize=csize)
+  else:
+    results2 = itertools.imap(annotate_inner,generate_locus(mls))
   for chunk in results2:
     for res in chunk:
       results[res[0]] = res[1:]
@@ -187,14 +188,14 @@ def annotate_gpds(args,inputbed):
 
 def annotate_inner(es):
   results = []
-  [gpds,inbeds] = es.get_payload()
+  [gpds,inbeds] = es.payload
   for gpd in gpds:
-    orig = gpd.get_length()
+    orig = gpd.length
     tot = 0
-    for rng1 in [x.get_range() for x in gpd.exons]:
+    for rng1 in [x.range for x in gpd.exons]:
       tot += sum([y.overlap_size(rng1) for y in inbeds])
     if tot > 0:
-      results.append([gpd.get_gene_name(),orig,tot,gpd.get_exon_count()])
+      results.append([gpd.gene_name,orig,tot,gpd.get_exon_count()])
   return results
 
 def do_inputs():

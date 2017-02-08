@@ -28,13 +28,6 @@ import  gpd_annotation_to_rarefraction
 import  annotated_read_bias_analysis
 import  gpd_to_junction_variance
 
-#bring in the folder to the path for our utilities
-#pythonfolder_loc = "../pyutil"
-pythonfolder_loc = "../../Au-public/iron/utilities"
-cmd_subfolder = os.path.realpath(os.path.abspath(os.path.join(os.path.split(inspect.getfile(inspect.currentframe() ))[0],pythonfolder_loc)))
-if cmd_subfolder not in sys.path:
-  sys.path.insert(0,cmd_subfolder)
-
 # BAM
 from seqtools.cli.utilities.gpd_to_bed_depth import external_cmd as gpd_to_bed_depth
 
@@ -43,7 +36,7 @@ from seqtools.cli.utilities.bed_depth_to_stratified_coverage import external_cmd
 from seqtools.cli.utilities.gpd_to_UCSC_bed12 import external_cmd as gpd_to_UCSC_bed12
 
 # BAM + annotation
-import  gpd_annotate
+from seqtools.cli.utilities.gpd_annotate import external_cmd as gpd_annotate
 
 # read count
 rcnt = -1
@@ -424,6 +417,7 @@ def make_data_bam_annotation(args):
   tlog.write(cmd)
   annotate_from_genomic_features.external_cmd(cmd)
   tlog.stop()
+
   time.sleep(3)
   tlog.start("get per-exon depth")
   # 2. Get depth distributions for each feature subset
@@ -507,7 +501,7 @@ def make_data_bam_annotation(args):
     cmd += ' --threads '+str(args.threads)
   sys.stderr.write("Annotating reads\n")
   sys.stderr.write(cmd+"\n")
-  gpd_annotate.external_cmd(cmd)
+  gpd_annotate(cmd)
   tlog.write(cmd)
   tlog.stop()
   time.sleep(3)

@@ -1,13 +1,8 @@
 #!/usr/bin/env python
+"""Get data about the lengths of the annotated sequences"""
 import sys, argparse, gzip, re, os, inspect
 
-#bring in the folder to the path for our utilities
-pythonfolder_loc = "../pylib"
-cmd_subfolder = os.path.realpath(os.path.abspath(os.path.join(os.path.split(inspect.getfile(inspect.currentframe() ))[0],pythonfolder_loc)))
-if cmd_subfolder not in sys.path:
-  sys.path.insert(0,cmd_subfolder)
-
-from Bio.Format.GPD import GPDStream
+from seqtools.format.gpd import GPDStream
 
 def main(args):
 
@@ -21,8 +16,8 @@ def main(args):
   data = {}
   for gpd in gs:
     z += 1
-    data[z] = [gpd.get_length(),gpd.get_exon_count()]
-    gpd.get_length()
+    data[z] = [gpd.length,gpd.get_exon_count()]
+    #gpd.length
   inf.close()
   inf = None
   if re.search('\.gz',args.best_annotation):
