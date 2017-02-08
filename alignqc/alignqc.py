@@ -1,11 +1,6 @@
 #!/usr/bin/env python
-import argparse, sys, os, inspect
-
-#bring in the folder to the path for our utilities
-pythonfolder_loc = "../utilities"
-cmd_subfolder = os.path.realpath(os.path.abspath(os.path.join(os.path.split(inspect.getfile(inspect.currentframe() ))[0],pythonfolder_loc)))
-if cmd_subfolder not in sys.path:
-  sys.path.insert(0,cmd_subfolder)
+"""The front end of alignqc"""
+import argparse, sys
 
 # Import our main launchers for each mode
 import analyze
