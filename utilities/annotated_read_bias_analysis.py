@@ -1,20 +1,16 @@
 #!/usr/bin/env python
+"""Look for bias across the 5' to 3' of annotated transcripts"""
 import sys, argparse, re, gzip, os, inspect
 from subprocess import PIPE, Popen
 from multiprocessing import Pool, cpu_count
 from tempfile import mkdtemp, gettempdir
 from shutil import rmtree
 
-#bring in the folder to the path for our utilities
-pythonfolder_loc = "../pylib"
-cmd_subfolder = os.path.realpath(os.path.abspath(os.path.join(os.path.split(inspect.getfile(inspect.currentframe() ))[0],pythonfolder_loc)))
-if cmd_subfolder not in sys.path:
-  sys.path.insert(0,cmd_subfolder)
-
-from Bio.Format.GPD import GPDStream
-from Bio.Range import GenomicRange, ranges_to_coverage
-from Bio.Statistics import average
-from Bio.Stream import LocusStream, MultiLocusStream
+from seqtools.format.gpd import GPDStream
+from seqtools.range import GenomicRange, GenomicRangeFromString
+from seqtools.range.multi import ranges_to_coverage
+from seqtools.statistics import average
+from seqtools.stream import LocusStream, MultiLocusStream
 
 def main(args):
 
@@ -44,13 +40,13 @@ def main(args):
   totals = []
   for l in mls:
     z += 1
-    [l0,l1,l2] = l.get_payload()
+    [l0,l1,l2] = l.payload
     if args.minimum_read_count > len(l0): continue
     if args.minimum_read_count > len(l2): continue
     rvals = do_locus(l0,l1,l2,args)
     for rval in rvals:
       totals.append(rval)
-    sys.stderr.write(str(z)+" "+l.get_range_string()+" "+str([len(x) for x in l.get_payload()])+" "+str(len(totals))+" proccessed        \r")
+    sys.stderr.write(str(z)+" "+l.get_range_string()+" "+str([len(x) for x in l.payload])+" "+str(len(totals))+" proccessed        \r")
   sys.stderr.write("\n")
   #results = {}
   #for i in range(1,101):
@@ -97,7 +93,7 @@ def spawn_jobs(mls,args):
   z = 0
   for l in mls:
     z += 1
-    [l0,l1,l2] = l.get_payload()
+    [l0,l1,l2] = l.payload
     if args.minimum_read_count > len(l0): continue
     if args.minimum_read_count > len(l2): continue
     vals = do_locus(l0,l1,l2,args)
@@ -108,7 +104,7 @@ def do_locus(annots,refs,reads,args):
   read_to_tx = {}
   tx_to_read = {}
   for a in annots:
-    for b in [x.get_value() for x in a.get_payload()]:
+    for b in [x.get_value() for x in a.payload]:
       if b['matching_exon_count'] < args.minimum_matched_exons: continue
       if b['read_length'] < args.minimum_read_length: continue
       read_to_tx[b['read_name']] = b['tx_name']
@@ -119,11 +115,11 @@ def do_locus(annots,refs,reads,args):
       del tx_to_read[tx]
   tx_to_ref = {}
   for ref in refs:
-    for gpd in ref.get_payload():
+    for gpd in ref.payload:
       tx = gpd.value('name')
       tx_to_ref[tx] = gpd
   for read in reads:
-    for b in read.get_payload():
+    for b in read.payload:
       if b.value('name') not in read_to_tx: continue
       tx = read_to_tx[b.value('name')]
       if tx not in tx_to_read: continue
@@ -171,7 +167,7 @@ def sort_annot(args):
     k+=1
     if k%1000==0: sys.stderr.write(str(k)+"       \r")
     f = line.rstrip().split("\t")
-    r = GenomicRange(range_string=f[13])
+    r = GenomicRangeFromString(f[13])
     #r.set_payload(parse_annot(f))
     p0.stdin.write(r.chr+"\t"+str(r.start)+"\t"+str(r.end)+"\t"+line)
   sys.stderr.write("\n")
@@ -200,7 +196,7 @@ def do_tx_line(vals):
     for i in range(0,ref_gpd.get_length()):
       bps.append(0)
     for rng1 in [x.rng for x in ref_gpd.exons]:
-      overs =  [[z[0],z[1].get_payload()] for z in [[y.union(rng1),y] for y in cov] if z[0]]
+      overs =  [[z[0],z[1].payload] for z in [[y.union(rng1),y] for y in cov] if z[0]]
       for ov in overs:
         dist1 = ov[0].start - rng1.start+curr
         dist2 = ov[0].end - rng1.start+curr
@@ -280,7 +276,7 @@ class Annot:
   def __init__(self,line):
     f = line.rstrip().split("\t")
     self.value = parse_annot(f)
-    self.range = GenomicRange(range_string=f[13])
+    self.range = GenomicRangeFromString(f[13])
   def get_range(self):
     return self.range
   def get_value(self):
