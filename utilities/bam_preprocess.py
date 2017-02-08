@@ -1,28 +1,15 @@
-#!/usr/bin/env python
-import argparse, sys, os, gzip, itertools, inspect, pickle, zlib, base64
+"""It is necessary to traverse the bam file sort some data by read name"""
+
+import argparse, sys, os, gzip, pickle, zlib, base64
 from shutil import rmtree, copy
-from multiprocessing import cpu_count, Pool, Queue, Lock
+from multiprocessing import cpu_count, Pool, Lock
 from tempfile import mkdtemp, gettempdir
 from subprocess import Popen, PIPE
 
-#bring in the folder to the path for our utilities
-pythonfolder_loc = "../pylib"
-cmd_subfolder = os.path.realpath(os.path.abspath(os.path.join(os.path.split(inspect.getfile(inspect.currentframe() ))[0],pythonfolder_loc)))
-if cmd_subfolder not in sys.path:
-  sys.path.insert(0,cmd_subfolder)
+from seqtools.format.sam.bam.files import BAMFile
+from seqtools.range import GenomicRange
 
-from Bio.Format.Sam import BAMFile
-from Bio.Stream import LocusStream
-from Bio.Range import ranges_to_coverage, GenomicRange
-
-#bring in the folder to the path for our utilities
-#pythonfolder_loc = "../pyutil"
-pythonfolder_loc = "../../Au-public/iron/utilities"
-cmd_subfolder = os.path.realpath(os.path.abspath(os.path.join(os.path.split(inspect.getfile(inspect.currentframe() ))[0],pythonfolder_loc)))
-if cmd_subfolder not in sys.path:
-  sys.path.insert(0,cmd_subfolder)
-
-import bam_bgzf_index
+import seqtools.cli.utilities.bam_bgzf_index as bam_bgzf_index
 
 
 ## The purpose of this script is to read through a bam alignment and record as much information as possible from it.  ##
@@ -36,24 +23,32 @@ g_count = 0
 g_sortpipe = None
 
 def do_chunk(ilines,infile,args):
+  """Takes in a the lines from the index file to work on in array form,
+     and the bam file name, and the arguments
+
+     returns a list of the necessary data for chimera detection ready for sorting
+  """
   ilines = [x.rstrip().split("\t") for x in ilines]
   coord = [int(x) for x in ilines[0][2:4]]
-  bf = BAMFile(infile,blockStart=coord[0],innerStart=coord[1])
+  bf = BAMFile(infile,BAMFile.Options(blockStart=coord[0],innerStart=coord[1]))
   results = []
   for i in range(0,len(ilines)):
     flag = int(ilines[i][5])
     e = bf.read_entry()
     #if not e: break
-    #print {'qlen':e.get_original_query_length(),'alen':e.get_aligned_bases_count()}
     value = None
     if e.is_aligned():
       tx = e.get_target_transcript(args.minimum_intron_size)
-      value =  {'qrng':e.get_actual_original_query_range().get_range_string(),'tx':tx.get_gpd_line(),'flag':flag,'qlen':e.get_original_query_length(),'aligned_bases':e.get_aligned_bases_count()}
-      results.append(e.value('qname')+"\t"+base64.b64encode(zlib.compress(pickle.dumps(value))))
+      value =  {'qrng':e.actual_original_query_range.get_range_string(),'tx':tx.get_gpd_line(),'flag':flag,'qlen':e.original_query_sequence_length,'aligned_bases':e.get_aligned_bases_count()}
+      results.append(e.qname+"\t"+base64.b64encode(
+                                      zlib.compress(
+                                       pickle.dumps(value))))
       #results.append([e.value('qname'),zlib.compress(pickle.dumps(value))])
     else:
-      value =  {'qrng':'','tx':'','flag':flag,'qlen':e.get_original_query_length(),'aligned_bases':0}
-      results.append(e.value('qname')+"\t"+base64.b64encode(zlib.compress(pickle.dumps(value))))
+      value =  {'qrng':'','tx':'','flag':flag,'qlen':e.original_query_length,'aligned_bases':0}
+      results.append(e.qname+"\t"+base64.b64encode(
+                                      zlib.compress(
+                                       pickle.dumps(value))))
       #results.append([e.value('qname'),zlib.compress(pickle.dumps(value))])
   return results
 

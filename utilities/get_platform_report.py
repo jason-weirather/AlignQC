@@ -1,23 +1,18 @@
-#!/usr/bin/env python
+""" Get data regarding platform specific results
+
+  input table is our length data file
+
+  1. read name
+  2. alignment type
+  3. best aligned length
+  4. total aligned length
+  5. read length
+"""
 import sys, argparse, re, gzip, inspect, os
 
-#bring in the folder to the path for our utilities
-pythonfolder_loc = "../pylib"
-cmd_subfolder = os.path.realpath(os.path.abspath(os.path.join(os.path.split(inspect.getfile(inspect.currentframe() ))[0],pythonfolder_loc)))
-if cmd_subfolder not in sys.path:
-  sys.path.insert(0,cmd_subfolder)
-
-from Bio.Statistics import average
+from seqtools.statistics import average
 
 def main(args):
-
-  #input table is our length data file
-  #1. read name
-  #2. alignment type
-  #3. best aligned length
-  #4. total aligned length
-  #5. read length
-
   #define read name programs
 
   #ONT basecalls

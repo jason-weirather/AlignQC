@@ -103,15 +103,15 @@ def main(args):
   sys.stderr.write("Checking "+str(len(reads.keys()))+" Aligned Reads\n")
   #now we know all features we can annotate reads
   sys.stderr.write("Read through our reads and bed entries\n")
-  sys.stderr.write("Annotate exons\n")
-  exons = annotate_gpds(args,exonbed)
-  exonnames = set(exons.keys())
   sys.stderr.write("Annotate intron\n")
   intron = annotate_gpds(args,intronbed)
   intronnames = set(intron.keys())
   sys.stderr.write("Annotate intergenic\n")
   intergenic = annotate_gpds(args,intergenicbed)
   intergenicnames = set(intergenic.keys())
+  sys.stderr.write("Annotate exons\n")
+  exons = annotate_gpds(args,exonbed)
+  exonnames = set(exons.keys())
   allnames = exonnames|intronnames|intergenicnames
   sys.stderr.write(str(len(allnames))+" reads attributed to a feature\n")
   vals = set(reads.keys())-allnames

@@ -5,15 +5,10 @@ from multiprocessing import cpu_count, Pool, Lock
 from tempfile import mkdtemp, gettempdir
 from subprocess import Popen, PIPE
 
-#bring in the folder to the path for our utilities
-pythonfolder_loc = "../pylib"
-cmd_subfolder = os.path.realpath(os.path.abspath(os.path.join(os.path.split(inspect.getfile(inspect.currentframe() ))[0],pythonfolder_loc)))
-if cmd_subfolder not in sys.path:
-  sys.path.insert(0,cmd_subfolder)
-
-from Bio.Range import ranges_to_coverage, GenomicRange
-from Bio.Format.GPD import GPD, SortedOutputFile as SortedGPDOutputFile
-from Bio.Stream import GZippedOutputFile
+from seqtools.range import GenomicRangeFromString
+from seqtools.range.multi import ranges_to_coverage
+from seqtools.format.gpd import GPD, SortedOutputFile as SortedGPDOutputFile
+from seqtools.stream import GZippedOutputFile
 
 ## The purpose of this script is to read through a bam alignment and record as much information as possible from it.  ##
 ## The bam should be indexed ahead of time in our index format.
@@ -82,7 +77,7 @@ def do_buffer(buffer,args):
     for i in range(0,len(dat)): 
       if dat[i]['aligned_bases'] > 0:
         dat[i]['tx'] = GPD(dat[i]['tx'])
-        dat[i]['qrng'] = GenomicRange(range_string=dat[i]['qrng'])
+        dat[i]['qrng'] = GenomicRangeFromString(dat[i]['qrng'])
       else:
         dat[i]['tx'] = None
         dat[i]['qrng'] = None
@@ -119,7 +114,7 @@ def do_buffer(buffer,args):
     best.append(dat[best_ind]['tx'].get_gpd_line())
     v = check_paths(aligned,best_ind,args)
 
-    o_qlen = dat[best_ind]['qrng'].length()
+    o_qlen = dat[best_ind]['qrng'].length
     v_qlen = v['qlen']
     if v['type'] == 'chimera':
       chimera_count += 1
@@ -229,7 +224,7 @@ def check_paths(path_data,best_ind,args):
   new_bases = path_data[best_ind]['aligned_bases']
   new_inds = set([best_ind])
   new_type = 'original'
-  new_qlen = path_data[best_ind]['qrng'].length()
+  new_qlen = path_data[best_ind]['qrng'].length
   for possible_path in possibles:
     if best_ind not in possible_path: continue # only consider path sets that have our best index in it
     res = evaluate_path(path_data,possible_path,best_ind,args)
@@ -245,7 +240,7 @@ def check_paths(path_data,best_ind,args):
             qrngs[-1] = qrngs[-1].merge(res['path'][i]['qrng'])
           else: qrngs.append(res['path'][i]['qrng'])
         #new_qlen = sum([x.length() for x in qrngs])
-        new_qlen = sum([x.length() for x in ranges_to_coverage(qrngs)])
+        new_qlen = sum([x.length for x in ranges_to_coverage(qrngs)])
         if res['gapped']: new_type = 'gapped'
         elif res['chimera']: new_type = 'chimera'
         elif res['self-chimera']: new_type = 'self-chimera'
@@ -278,7 +273,7 @@ def evaluate_path(path_data,possible_path,best_ind,args):
       if pord[i]['qrng'].overlap_size(pord[j]['qrng']) > args.max_query_overlap:
         return res
 
-  chrcount = len(set([x['tx'].get_range().chr for x in pord]))
+  chrcount = len(set([x['tx'].range.chr for x in pord]))
 
   # check for target overlaps ... not gapped or chimera but maybe self-chimera
   for i in range(0,len(pord)):
@@ -286,7 +281,7 @@ def evaluate_path(path_data,possible_path,best_ind,args):
       if pord[i]['tx'].overlap_size(pord[j]['tx']) > args.max_target_overlap:
         #res['gapped'] = False
         #res['chimera'] = False
-        if pord[i]['tx'].get_strand() != pord[j]['tx'].get_strand() and chrcount == 1:
+        if pord[i]['tx'].strand != pord[j]['tx'].strand and chrcount == 1:
           res['self-chimera'] = True
           res['any'] = True
         else: 
@@ -297,7 +292,7 @@ def evaluate_path(path_data,possible_path,best_ind,args):
   for i in range(0,len(pord)):
     for j in range(i+1,len(pord)):  
       if args.max_target_gap:
-        dist = pord[i]['tx'].get_range().distance(pord[j]['tx'].get_range())
+        dist = pord[i]['tx'].range.distance(pord[j]['tx'].range)
         if dist > args.max_target_gap or dist == -1: 
           res['chimera'] = True
           res['gapped'] = False

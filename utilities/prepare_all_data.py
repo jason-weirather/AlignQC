@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# This script will call most of the individual modules analyzing the data
+"""This script will call most of the individual modules analyzing the data"""
 
 import argparse, sys, os, time, re, gzip, locale, inspect, time
 from subprocess import Popen, PIPE
@@ -36,11 +36,11 @@ if cmd_subfolder not in sys.path:
   sys.path.insert(0,cmd_subfolder)
 
 # BAM
-import gpd_to_bed_depth
+from seqtools.cli.utilities.gpd_to_bed_depth import external_cmd as gpd_to_bed_depth
 
-import genepred_to_bed
+from seqtools.cli.utilities.bed_depth_to_stratified_coverage import external_cmd as bed_depth_to_stratified_coverage
 
-import bed_depth_to_stratified_coverage
+from seqtools.cli.utilities.gpd_to_UCSC_bed12 import external_cmd as gpd_to_UCSC_bed12
 
 # BAM + annotation
 import  gpd_annotate
@@ -111,7 +111,6 @@ def make_data_bam(args):
   bam_preprocess.external_cmd(cmd)
   tlog.write(cmd)
   tlog.stop()
-
   tlog.start("traverse preprocessed")
   # 2. Describe the alignments by traversing the previously made file
   cmd = udir+'/traverse_preprocessed.py '+args.tempdir+'/temp/alndata.txt.gz'
@@ -157,7 +156,6 @@ def make_data_bam(args):
   tlog.write(cmd)
   tlog.stop()
 
-
   tlog.start("check for pacbio in case we make a special graph")
   # Check for pacbio to see if we need to make a graph for it
   do_pb = False
@@ -184,13 +182,15 @@ def make_data_bam(args):
   cmd += " --threads "+str(args.threads)
   sys.stderr.write("Generate the depth bed for the mapped reads\n")
   sys.stderr.write(cmd+"\n")
-  gpd_to_bed_depth.external_cmd(cmd)
+  gpd_to_bed_depth(cmd)
+
   sys.stderr.write("Stratify the depth to make it plot quicker and cleaner\n")
   cmd = "bed_depth_to_stratified_coverage.py "+args.tempdir+'/data/depth.sorted.bed.gz'
   cmd += ' -l '+args.tempdir+"/data/chrlens.txt -o "+args.tempdir+'/temp/depth.coverage-strata.sorted.bed.gz'
   cmd += ' --output_key '+args.tempdir+'/temp/coverage-strata.key'
   cmd += ' --minimum_coverage 100000'
-  bed_depth_to_stratified_coverage.external_cmd(cmd) 
+  bed_depth_to_stratified_coverage(cmd) 
+
   global rcnt #read count
   rcnt = 0
   tinf = gzip.open(args.tempdir+'/data/lengths.txt.gz')
@@ -307,51 +307,51 @@ def make_data_bam(args):
   tlog.start("make bed file")
   # Make a UCSC compatible bed file
   sys.stderr.write("Make a UCSC genome browser compatible bed file\n")
-  cmd = 'genepred_to_bed.py --headername '+args.input+':best '
+  cmd = 'gpd_to_UCSC_bed12.py --headername '+args.input+':best '
   cmd += ' '+args.tempdir+'/data/best.sorted.gpd.gz'
   cmd += ' -o '+args.tempdir+'/data/best.sorted.bed.gz'
   cmd += ' --color red'
   sys.stderr.write(cmd+"\n")
-  genepred_to_bed.external_cmd(cmd)
+  gpd_to_UCSC_bed12(cmd)
   tlog.write(cmd)
   tlog.stop()
 
   tlog.start("make bed file")
-  cmd = 'genepred_to_bed.py --headername '+args.input+':trans-chimera '
+  cmd = 'gpd_to_UCSC_bed12.py --headername '+args.input+':trans-chimera '
   cmd += ' '+args.tempdir+'/data/chimera.gpd.gz'
   cmd += ' -o '+args.tempdir+'/data/chimera.bed.gz'
   cmd += ' --color blue'
   sys.stderr.write(cmd+"\n")
-  genepred_to_bed.external_cmd(cmd)
+  gpd_to_UCSC_bed12(cmd)
   tlog.write(cmd)
   tlog.stop()
 
   tlog.start("make bed file")
-  cmd = 'genepred_to_bed.py --headername '+args.input+':gapped '
+  cmd = 'gpd_to_UCSC_bed12.py --headername '+args.input+':gapped '
   cmd += ' '+args.tempdir+'/data/gapped.gpd.gz'
   cmd += ' -o '+args.tempdir+'/data/gapped.bed.gz'
   cmd += ' --color orange'
   sys.stderr.write(cmd+"\n")
-  genepred_to_bed.external_cmd(cmd)
+  gpd_to_UCSC_bed12(cmd)
   tlog.write(cmd)
   tlog.stop()
 
-  cmd = 'genepred_to_bed.py --headername '+args.input+':self-chimera '
+  cmd = 'gpd_to_UCSC_bed12.py --headername '+args.input+':self-chimera '
   cmd += ' '+args.tempdir+'/data/technical_chimeras.gpd.gz'
   cmd += ' -o '+args.tempdir+'/data/technical_chimeras.bed.gz'
   cmd += ' --color green'
   sys.stderr.write(cmd+"\n")
-  genepred_to_bed.external_cmd(cmd)
+  gpd_to_UCSC_bed12(cmd)
   tlog.write(cmd)
   tlog.stop()
 
   tlog.start("make bed file")
-  cmd = 'genepred_to_bed.py --headername '+args.input+':self-atypical '
+  cmd = 'gpd_to_UCSC_bed12.py --headername '+args.input+':self-atypical '
   cmd += ' '+args.tempdir+'/data/technical_atypical_chimeras.gpd.gz'
   cmd += ' -o '+args.tempdir+'/data/technical_atypical_chimeras.bed.gz'
   cmd += ' --color purple'
   sys.stderr.write(cmd+"\n")
-  genepred_to_bed.external_cmd(cmd)
+  gpd_to_UCSC_bed12(cmd)
   tlog.write(cmd)
   tlog.stop()
 

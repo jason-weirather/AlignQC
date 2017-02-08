@@ -1,19 +1,19 @@
-#!/usr/bin/env python
+"""Uses the bam indexing utility to generate a gzipped index with
+
+   1. Query name
+   2. Target range
+   3. BlockStart
+   4. InnerStart
+   5. Aligned Base Count
+   6. Flag
+"""
 import argparse, sys, os, inspect
 from shutil import rmtree
 from multiprocessing import cpu_count
 from tempfile import mkdtemp, gettempdir
 
-from Bio.Format.Bed import Bed12
 
-#bring in the folder to the path for our utilities
-#pythonfolder_loc = "../pyutil"
-pythonfolder_loc = "../../Au-public/iron/utilities"
-cmd_subfolder = os.path.realpath(os.path.abspath(os.path.join(os.path.split(inspect.getfile(inspect.currentframe() ))[0],pythonfolder_loc)))
-if cmd_subfolder not in sys.path:
-  sys.path.insert(0,cmd_subfolder)
-
-import bam_bgzf_index
+from seqtools.cli.utilities.bam_bgzf_index import external_cmd as bam_bgzf_index
 
 g_version = None
 
@@ -31,7 +31,7 @@ def main(args):
       ofname = iname+'.bgi'
     cmd = 'bam_bgzf_index.py --threads '+str(args.threads)+' -o '+ofname+' --specific_tempdir '+args.tempdir+' '+iname
     sys.stderr.write('Indexing '+iname+"\n")
-    bam_bgzf_index.external_cmd(cmd)
+    bam_bgzf_index(cmd)
   # Temporary working directory step 3 of 3 - Cleanup
   if not args.specific_tempdir:
     rmtree(args.tempdir)

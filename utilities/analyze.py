@@ -114,7 +114,7 @@ def do_inputs():
   label5.add_argument('--max_query_gap',type=int,help="for testing gapped alignment advantge")
   label5.add_argument('--max_target_gap',type=int,default=500000,help="for testing gapped alignment advantage")
   label5.add_argument('--required_fractional_improvement',type=float,default=0.2,help="require gapped alignment to be this much better (in alignment length) than single alignment to consider it.")
-  
+
   ### Parameters for locus analysis
   label6 = parser.add_argument_group(title="Locus parameters",description="Optionally produce plots and data regarding clusters of sequences")
   label6.add_argument('--do_loci',action='store_true',help="this analysis is time consuming at the moment\n")
@@ -137,8 +137,12 @@ def do_inputs():
   label9 = parser.add_argument_group(title="Rarefraction plot parameters")
   label9.add_argument('--samples_per_xval',type=int,default=10)
 
-  label10 = parser.add_argument_group(title="Path parameters")
-  label10.add_argument('--rscript_path',default='Rscript',help="The location of the Rscript executable.  Default is installed in path")
+  ### Parameters for bias plots
+  label10 = parser.add_argument_group(title="Bias parameters")
+  label10.add_argument('--max_bias_data',type=int,default=500000,help="Bias does not need too large of a dataset.  By default data will be downsampled for large datasets.")
+
+  label11 = parser.add_argument_group(title="Path parameters")
+  label11.add_argument('--rscript_path',default='Rscript',help="The location of the Rscript executable.  Default is installed in path")
 
   args = parser.parse_args()
   setup_tempdir(args)
