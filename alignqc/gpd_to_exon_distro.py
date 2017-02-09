@@ -3,7 +3,6 @@ import sys, argparse, re, gzip, inspect, os
 
 from multiprocessing import Pool, cpu_count
 
-#bring in the folder to the path for our utilities
 from seqtools.format.gpd import GPDStream
 
 def main(args):
