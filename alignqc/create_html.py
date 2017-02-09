@@ -3,14 +3,8 @@ import argparse, sys, os, time, re, gzip, locale, inspect
 from shutil import rmtree, copy, copytree
 from tempfile import mkdtemp, gettempdir
 
-#bring in the folder to the path for our utilities
-pythonfolder_loc = "../pylib"
-cmd_subfolder = os.path.realpath(os.path.abspath(os.path.join(os.path.split(inspect.getfile(inspect.currentframe() ))[0],pythonfolder_loc)))
-if cmd_subfolder not in sys.path:
-  sys.path.insert(0,cmd_subfolder)
-
-from Bio.Range import BedStream
-from Bio.Format.GPD import GPDStream
+from seqtools.range.multi import BedStream
+from seqtools.format.gpd import GPDStream
 
 import make_solo_html
 
@@ -94,7 +88,7 @@ def make_html(args):
   bs = BedStream(inf)
   for rng in bs:
     f = line.rstrip().split("\t")
-    coverage_data['genome_covered'] += rng.length()
+    coverage_data['genome_covered'] += rng.length
   inf.close()
 
   # The annotation section
@@ -104,42 +98,42 @@ def make_html(args):
     bs = BedStream(inf)
     for rng in bs:
       f = line.rstrip().split("\t")
-      coverage_data['exons_total'] += rng.length()
+      coverage_data['exons_total'] += rng.length
     inf.close()
     inf = open(args.tempdir+'/data/beds/intron.bed')
     coverage_data['introns_total'] = 0
     bs = BedStream(inf)
     for rng in bs:
       f = line.rstrip().split("\t")
-      coverage_data['introns_total'] += rng.length()
+      coverage_data['introns_total'] += rng.length
     inf.close()
     inf = open(args.tempdir+'/data/beds/intergenic.bed')
     coverage_data['intergenic_total'] = 0
     bs = BedStream(inf)
     for rng in bs:
       f = line.rstrip().split("\t")
-      coverage_data['intergenic_total'] += rng.length()
+      coverage_data['intergenic_total'] += rng.length
     inf.close()
     inf = gzip.open(args.tempdir+'/data/exondepth.bed.gz')
     coverage_data['exons_covered'] = 0
     bs = BedStream(inf)
     for rng in bs:
       f = line.rstrip().split("\t")
-      coverage_data['exons_covered'] += rng.length()
+      coverage_data['exons_covered'] += rng.length
     inf.close()
     inf = gzip.open(args.tempdir+'/data/introndepth.bed.gz')
     coverage_data['introns_covered'] = 0
     bs = BedStream(inf)
     for rng in bs:
       f = line.rstrip().split("\t")
-      coverage_data['introns_covered'] += rng.length()
+      coverage_data['introns_covered'] += rng.length
     inf.close()
     inf = gzip.open(args.tempdir+'/data/intergenicdepth.bed.gz')
     coverage_data['intergenic_covered'] = 0
     bs = BedStream(inf)
     for rng in bs:
       f = line.rstrip().split("\t")
-      coverage_data['intergenic_covered'] += rng.length()
+      coverage_data['intergenic_covered'] += rng.length
     inf.close()
 
     # deal with annotations
@@ -148,9 +142,9 @@ def make_html(args):
     with open(args.annotation) as inf:
       gs = GPDStream(inf)  
       for gpd in gs:
-        tx_to_gene[gpd.get_transcript_name()] = gpd.get_gene_name()
-        ref_genes[gpd.get_gene_name()] = [0,0]
-        ref_transcripts[gpd.get_transcript_name()] = [0,0]
+        tx_to_gene[gpd.get_transcript_name()] = gpd.gene_name
+        ref_genes[gpd.gene_name] = [0,0]
+        ref_transcripts[gpd.transcript_name] = [0,0]
     inf = gzip.open(args.tempdir+'/data/annotbest.txt.gz')
     for line in inf:
       f = line.rstrip().split("\t")
