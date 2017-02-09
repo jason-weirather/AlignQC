@@ -5,8 +5,8 @@ import argparse, sys
 # Import our main launchers for each mode
 import analyze
 import dump
-import index_bam
 import compare
+from seqtools.cli.utilities.bam_bgzf_index import external_cmd as index_bam
 
 version = '1.3dev'
 
@@ -20,7 +20,7 @@ def main():
   elif args.mode == 'dump':
     dump.external_cmd(" ".join(operable_argv),version=version)
   elif args.mode == 'index':
-    index_bam.external_cmd(" ".join(operable_argv),version=version)
+    index_bam(" ".join(operable_argv))
   elif args.mode == 'compare':
     compare.external_cmd(" ".join(operable_argv),version=version)
   else:
