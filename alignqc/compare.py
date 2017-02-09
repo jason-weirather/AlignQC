@@ -3,8 +3,9 @@ import argparse, sys, os, re, gzip
 from shutil import rmtree, copyfile
 from multiprocessing import cpu_count
 from tempfile import mkdtemp, gettempdir
+
 import dump
-from Bio.Statistics import average, N50, median, standard_deviation
+from seqtools.statistics import average, N50, median, standard_deviation
 
 
 g_version = None
