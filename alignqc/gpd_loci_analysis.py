@@ -1,19 +1,14 @@
 #!/usr/bin/env python
+"""Get information at the locus level.  Good if you have no gene annotation"""
 import argparse, sys, os, re, gzip, inspect, os
 from random import shuffle
 from shutil import rmtree
 from multiprocessing import cpu_count, Pool, Lock
 from tempfile import mkdtemp, gettempdir
 
-#bring in the folder to the path for our utilities
-pythonfolder_loc = "../pylib"
-cmd_subfolder = os.path.realpath(os.path.abspath(os.path.join(os.path.split(inspect.getfile(inspect.currentframe() ))[0],pythonfolder_loc)))
-if cmd_subfolder not in sys.path:
-  sys.path.insert(0,cmd_subfolder)
-
-from Bio.Format.GPD import GPDStream
-from Bio.Stream import LocusStream
-from Bio.Structure import TranscriptLoci, TranscriptLociMergeRules, TranscriptGroup
+from seqtools.format.gpd import GPDStream
+from seqtools.stream import LocusStream
+from seqtools.structure.gene import TranscriptLoci, TranscriptLociMergeRules, TranscriptGroup
 
 glock = Lock()
 last_range = None
@@ -43,7 +38,7 @@ def main(args):
   results = []
   z = 0
   for locus in LocusStream(GPDStream(inf)):
-    vals = locus.get_payload()
+    vals = locus.payload
     if args.downsample:
       if len(vals) > args.downsample:
         shuffle(vals)
@@ -55,7 +50,7 @@ def main(args):
     else:
       tls = p.apply_async(do_locus,args=(locus,mr,z,args,False),callback=process_output)
       results.append(tls)
-    z += len(locus.get_payload())
+    z += len(locus.payload)
   if args.threads > 1:
     p.close()
     p.join()
@@ -71,15 +66,15 @@ def main(args):
   for res in sorted([y for y in [r.get() for r in results] if y],key=lambda x: (x.chr,x.start,x.end)):
     rng =  res.get_range_string()
     rngout = res.copy()
-    tls = res.get_payload()
-    for tl in sorted(tls,key=lambda x: (x.get_range().chr,x.get_range().start,x.get_range().end)):
+    tls = res.payload
+    for tl in sorted(tls,key=lambda x: (x.range.chr,x.range.start,x.range.end)):
       lnum += 1
-      txs = sorted(tl.get_transcripts(),key=lambda x: (x.get_range().chr,x.get_range().start,x.get_range().end))
-      tlrng = [str(x) for x in tl.get_range().get_bed_array()]
+      txs = sorted(tl.get_transcripts(),key=lambda x: (x.range.chr,x.range.start,x.range.end))
+      tlrng = [str(x) for x in tl.range.get_bed_array()]
       ofl.write("\t".join(tlrng)+"\t"+str(lnum)+"\t"+str(len(txs))+"\n")
       for tx in txs:
-        cov = tx.get_payload()[1]
-        of.write("\t".join(tlrng)+"\t"+str(lnum)+"\t"+str(len(txs))+"\t"+str(tx.get_payload()[0])+"\t"+str(z)+"\t"+tx.get_gene_name()+"\t"+str(cov['average_coverage'])+"\t"+str(cov['fraction_covered'])+"\t"+str(cov['mindepth'])+"\n")
+        cov = tx.payload[1]
+        of.write("\t".join(tlrng)+"\t"+str(lnum)+"\t"+str(len(txs))+"\t"+str(tx.payload[0])+"\t"+str(z)+"\t"+tx.gene_name+"\t"+str(cov['average_coverage'])+"\t"+str(cov['fraction_covered'])+"\t"+str(cov['mindepth'])+"\n")
   if args.output_loci:
     ofl.close()
   inf.close()
@@ -92,7 +87,7 @@ def process_output(curr_range):
   global last_range
   global glock
   if not curr_range: return None
-  if len(curr_range.get_payload())==0: return None
+  if len(curr_range.payload)==0: return None
   glock.acquire()
   if curr_range:
     if not last_range: 
@@ -107,10 +102,9 @@ def process_output(curr_range):
 def do_locus(locus,mr,curline,args,verbose=True):
     txl = TranscriptLoci()
     txl.set_merge_rules(mr)
-    #if len(locus.get_payload()) == 0: return
     z = 0
-    tot = len(locus.get_payload())
-    for gpd in locus.get_payload():
+    tot = len(locus.payload)
+    for gpd in locus.payload:
       z += 1
       curline+=1
       gpd.set_payload([curline,None])
@@ -121,25 +115,25 @@ def do_locus(locus,mr,curline,args,verbose=True):
       covs = txl.get_depth_per_transcript()
       remove_list = []
       for g in txl.get_transcripts():
-        if g.get_id() not in covs: continue
-        x = covs[g.get_id()]
-        g.get_payload()[1] = x
+        if g.id not in covs: continue
+        x = covs[g.id]
+        g.payload[1] = x
         if x['average_coverage'] < args.min_depth:
-          remove_list.append(g.get_id())
+          remove_list.append(g.id)
         elif args.min_depth > 1 and x['fraction_covered'] < args.min_coverage_at_depth:
-          remove_list.append(g.get_id())
+          remove_list.append(g.id)
       for tx_id in remove_list:
         txl.remove_transcript(tx_id)
     if verbose: sys.stderr.write("\n")
     if verbose: 
-      if txl.get_range():
-        sys.stderr.write(txl.get_range().get_range_string()+"\n")
+      if txl.range:
+        sys.stderr.write(txl.range.get_range_string()+"\n")
     #sys.stderr.write('partition locus'+"\n")
     tls = txl.partition_loci(verbose=verbose)
     curr_range = None
     for tl in tls:
-      if not curr_range: curr_range = tl.get_range()
-      curr_range = curr_range.merge(tl.get_range())
+      if not curr_range: curr_range = tl.range
+      curr_range = curr_range.merge(tl.range)
     if not curr_range: return None
     curr_range.set_payload(tls)
     return curr_range
