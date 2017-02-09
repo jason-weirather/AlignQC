@@ -4,6 +4,7 @@ from subprocess import Popen, PIPE
 from tempfile import mkdtemp, gettempdir
 from multiprocessing import cpu_count
 from shutil import rmtree
+from distutils.spawn import find_executable
 
 
 import prepare_all_data
@@ -145,7 +146,17 @@ def do_inputs():
   label11.add_argument('--rscript_path',default='Rscript',help="The location of the Rscript executable.  Default is installed in path")
 
   args = parser.parse_args()
+  if args.output_folder:
+     if os.path.exists(args.output_folder):
+        parser.error("output folder already exists. will not overwrite output folder")
   setup_tempdir(args)
+  ex = find_executable(args.rscript_path)
+  if not ex:
+     parser.error("Rscript is required and could not located in '"+args.rscript_path+"' its best if you just have it installed in your path by installing the base R program. Or you can specify its location with the --rscript_path option")
+  ex = find_executable('sort')
+  if not ex:
+     parser.error("sort as a command utility is required but could not be located.  Perhaps you are not using a linux operating system?")
+
   return args
 
 if __name__=='__main__':
