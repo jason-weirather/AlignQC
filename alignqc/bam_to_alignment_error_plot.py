@@ -1,27 +1,22 @@
 #!/usr/bin/env python
-import argparse, sys, os, random, inspect, os, time, gc
+"""Calculate non-context based errors"""
+
+import argparse, sys, os, time, gc
 from shutil import rmtree
-from multiprocessing import cpu_count
 from tempfile import mkdtemp, gettempdir
 from subprocess import call
 
-#bring in the folder to the path for our utilities
-pythonfolder_loc = "../pylib"
-cmd_subfolder = os.path.realpath(os.path.abspath(os.path.join(os.path.split(inspect.getfile(inspect.currentframe() ))[0],pythonfolder_loc)))
-if cmd_subfolder not in sys.path:
-  sys.path.insert(0,cmd_subfolder)
-
-from Bio.Format.Sam import BAMFile
-from Bio.Errors import ErrorProfileFactory
-from Bio.Format.Fasta import FastaData
-from Bio.Format.BamIndex import BAMIndexRandomAccessPrimary as BIRAP
+from seqtools.format.sam.bam.files import BAMFile
+from seqtools.errors import ErrorProfileFactory
+from seqtools.format.fasta import FASTAData
+from seqtools.format.sam.bam.bamindex import BAMIndexRandomAccessPrimary as BIRAP
 
 def main(args):
 
   sys.stderr.write("Reading our reference Fasta\n")
-  ref = FastaData(open(args.reference,'rb').read())
+  ref = FASTAData(open(args.reference,'rb').read())
   sys.stderr.write("Finished reading our reference Fasta\n")
-  bf = BAMFile(args.input,reference=ref)
+  bf = BAMFile(args.input,BAMFile.Options(reference=ref))
   bind = None
   epf = ErrorProfileFactory()
   if args.random:
@@ -32,8 +27,6 @@ def main(args):
       bind = BIRAP(index_file=args.input+'.bgi',alignment_file=args.input)
     z = 0
     while True:
-      #rname = random.choice(bf.index.get_names())
-      #coord = bf.index.get_longest_target_alignment_coords_by_name(rname)
       coord = bind.get_random_coord()
       if not coord: continue
       e = bf.fetch_by_coord(coord)

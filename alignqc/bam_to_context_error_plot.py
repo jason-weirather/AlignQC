@@ -5,26 +5,20 @@ from multiprocessing import cpu_count
 from tempfile import mkdtemp, gettempdir
 from subprocess import call
 
-#bring in the folder to the path for our utilities
-pythonfolder_loc = "../pylib"
-cmd_subfolder = os.path.realpath(os.path.abspath(os.path.join(os.path.split(inspect.getfile(inspect.currentframe() ))[0],pythonfolder_loc)))
-if cmd_subfolder not in sys.path:
-  sys.path.insert(0,cmd_subfolder)
-
-from Bio.Format.Sam import BAMFile
-from Bio.Format.BamIndex import BAMIndexRandomAccessPrimary as BIRAP
-from Bio.Errors import ErrorProfileFactory
-from Bio.Format.Fasta import FastaData
+from seqtools.format.sam.bam.files import BAMFile
+from seqtools.format.sam.bam.bamindex import BAMIndexRandomAccessPrimary as BIRAP
+from seqtools.errors import ErrorProfileFactory
+from seqtools.format.fasta import FASTAData
 
 # Take the bam file as an input and produce plots and data file for context errors.
 
 def main(args):
   # make our error profile report
   sys.stderr.write("Reading reference fasta\n")
-  ref = FastaData(open(args.reference).read())
+  ref = FASTAData(open(args.reference).read())
   sys.stderr.write("Reading index\n")
   epf = ErrorProfileFactory()
-  bf = BAMFile(args.input,reference=ref)
+  bf = BAMFile(args.input,BAMFile.Options(reference=ref))
   bind = None
   if args.random:
     if args.input_index:
