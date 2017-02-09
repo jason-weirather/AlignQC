@@ -5,7 +5,7 @@ from multiprocessing import cpu_count
 from tempfile import mkdtemp, gettempdir
 from xml.etree import ElementTree
 
-from Bio.Format.Bed import Bed12
+from seqtools.format.bed import Bed12
 
 g_version = None
 
