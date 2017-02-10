@@ -142,7 +142,7 @@ def make_html(args):
     with open(args.annotation) as inf:
       gs = GPDStream(inf)  
       for gpd in gs:
-        tx_to_gene[gpd.get_transcript_name()] = gpd.gene_name
+        tx_to_gene[gpd.transcript_name] = gpd.gene_name
         ref_genes[gpd.gene_name] = [0,0]
         ref_transcripts[gpd.transcript_name] = [0,0]
     inf = gzip.open(args.tempdir+'/data/annotbest.txt.gz')

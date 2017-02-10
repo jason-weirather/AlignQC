@@ -116,15 +116,15 @@ def do_locus(annots,refs,reads,args):
   tx_to_ref = {}
   for ref in refs:
     for gpd in ref.payload:
-      tx = gpd.value('name')
+      tx = gpd.entries.name
       tx_to_ref[tx] = gpd
   for read in reads:
     for b in read.payload:
-      if b.value('name') not in read_to_tx: continue
-      tx = read_to_tx[b.value('name')]
+      if b.entries.name not in read_to_tx: continue
+      tx = read_to_tx[b.entries.name]
       if tx not in tx_to_read: continue
       if tx not in tx_to_ref: continue
-      tx_to_read[tx][b.value('name')] = b
+      tx_to_read[tx][b.entries.name] = b
   rvals = []
   for tx in tx_to_read:
     rvals.append(do_tx_line([tx_to_ref[tx],tx_to_read[tx].values(),args]))
@@ -193,7 +193,7 @@ def do_tx_line(vals):
     #print [x.get_payload() for x in cov]
     curr = 0
     bps = []
-    for i in range(0,ref_gpd.get_length()):
+    for i in range(0,ref_gpd.length):
       bps.append(0)
     for rng1 in [x.rng for x in ref_gpd.exons]:
       overs =  [[z[0],z[1].payload] for z in [[y.union(rng1),y] for y in cov] if z[0]]
@@ -202,7 +202,7 @@ def do_tx_line(vals):
         dist2 = ov[0].end - rng1.start+curr
         for i in range(dist1,dist2+1):
           bps[i]+=ov[1]
-      curr+=rng1.length()
+      curr+=rng1.length
     trimmedbps = bps
     if args.only_covered_ends:
       start = 0
