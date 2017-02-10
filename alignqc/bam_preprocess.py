@@ -74,6 +74,9 @@ def main(args):
     bam_bgzf_index.external_cmd(cmd)
     #call(cmd.split())
 
+  #parallel_thread = ''
+  #if args.threads > 1: parallel_thread = ' --parallel='+str(args.threads)+' '
+  #cmd1 = 'sort '+parallel_thread+' -k1,1 -T '+args.tempdir+'/'
   cmd1 = 'sort -k1,1 -T '+args.tempdir+'/'
   cmd2 = 'gzip'
   global g_sortpipe
@@ -119,7 +122,7 @@ def do_inputs():
   parser.add_argument('-o','--output',help="gzipped output",required=True)
   parser.add_argument('--threads',type=int,default=cpu_count(),help="INT number of threads to run. Default is system cpu count")
   parser.add_argument('--minimum_intron_size',type=int,default=68)
-  parser.add_argument('--chunk_size',type=int,default=50000,help="number of alignments to process at a time")
+  parser.add_argument('--chunk_size',type=int,default=10000,help="number of alignments to process at a time")
 
   # Temporary working directory step 1 of 3 - Definition
   group = parser.add_mutually_exclusive_group()
