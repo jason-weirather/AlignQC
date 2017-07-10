@@ -19,8 +19,6 @@ def main():
     analyze.external_cmd(" ".join(operable_argv),version=version)
   elif args.mode == 'dump':
     dump.external_cmd(" ".join(operable_argv),version=version)
-  elif args.mode == 'index':
-    index_bam(" ".join(operable_argv))
   elif args.mode == 'compare':
     compare.external_cmd(" ".join(operable_argv),version=version)
   else:
@@ -30,7 +28,7 @@ def do_inputs():
   # Setup command line inputs
   global version
   parser=argparse.ArgumentParser(description="Version "+str(version)+"\nReview reports about alignments.",formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-  parser.add_argument('mode',choices=['analyze','dump','compare','combine','index'],help="MODE of program to run")
+  parser.add_argument('mode',choices=['analyze','dump','compare'],help="MODE of program to run")
   args = parser.parse_args()
   return args
 

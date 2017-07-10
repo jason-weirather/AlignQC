@@ -32,4 +32,3 @@ setup(
     'console_scripts':['alignqc=alignqc.alignqc:main']
   }
 )
-  
