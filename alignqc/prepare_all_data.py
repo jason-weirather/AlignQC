@@ -671,7 +671,7 @@ def make_data_bam_annotation(args):
     if f[1] in rnames: of.write(line)
   inf.close()
   of.close()
-
+  if os.name == 'nt': return 
   tlog.start("use annotations to check for 5' to 3' biase")
   # 11. Use annotation outputs to check for  bias
   sys.stderr.write("Prepare bias data\n")

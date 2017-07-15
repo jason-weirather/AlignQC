@@ -200,11 +200,12 @@ def make_html(args):
     #Get evidence counts for bias
     bias_tx_count = None
     bias_read_count = None
-    with open(args.tempdir+'/data/bias_counts.txt') as inf:
-      for line in inf:
-        f = line.rstrip().split("\t")
-        bias_tx_count = int(f[0])
-        bias_read_count = int(f[1])
+    if os.name != 'nt':
+      with open(args.tempdir+'/data/bias_counts.txt') as inf:
+        for line in inf:
+          f = line.rstrip().split("\t")
+          bias_tx_count = int(f[0])
+          bias_read_count = int(f[1])
 
   #make our css directory
   if not os.path.exists(args.tempdir+'/css'):
@@ -554,25 +555,32 @@ def make_html(args):
           <td>Intergenic</td><td><div class="legend_square intergenic_cov_leg"></div></td></tr>
     </table>
   </div>
+  '''
+    of.write(ostr)
+    if os.name != 'nt':
+      ostr = '''
   <div class="one_half left">
     <div class="rhead">Bias in alignment to reference transcripts [<a download="bias.pdf" href="plots/bias.pdf">pdf</a>]</div>
     <table>
   '''
-    # still in conditional for annotation requirement
-    of.write(ostr)
-    of.write('<tr><td colspan="2">Evidence from:</td></tr>')
-    of.write('<tr><td>Total Transcripts</td><td>'+str(addcommas(bias_tx_count))+'</td></tr>'+"\n")
-    of.write('<tr><td>Total reads</td><td>'+str(addcommas(bias_read_count))+'</td></tr>'+"\n")
-    ostr='''
+      # still in conditional for annotation requirement
+      of.write(ostr)
+      of.write('<tr><td colspan="2">Evidence from:</td></tr>')
+      of.write('<tr><td>Total Transcripts</td><td>'+str(addcommas(bias_tx_count))+'</td></tr>'+"\n")
+      of.write('<tr><td>Total reads</td><td>'+str(addcommas(bias_read_count))+'</td></tr>'+"\n")
+      ostr='''
     </table>
     <img src="plots/bias.png" alt="bias_png" />
   </div>
+      '''
+      of.write(ostr)
+      ostr = '''
   <div class="clear"></div>
 '''
-    # still in annotations check
-    of.write(ostr)
-  # done with annotations check
-  ostr = '''
+      # still in annotations check
+      of.write(ostr)
+      # done with annotations check
+    ostr = '''
 </div>
 <hr />
 '''
@@ -739,7 +747,7 @@ def make_html(args):
 <div class="clear"></div>
 '''
     of.write(ostr)
-  if args.annotation:
+  if args.annotation and os.name != 'nt':
     # We can output the junction variance plot
     ostr = '''
   <div class="left full_length">
@@ -841,17 +849,23 @@ def make_html(args):
     <td>Transcript full-length rarefraction:</td>
     <td class="raw_files"><a download="transcript_full_rarefraction.txt" href="data/transcript_full_rarefraction.txt">transcript_full_rarefraction.txt</a></td>
   </tr>
+  '''
+    of.write(ostr)
+    ostr = '''
   <tr>
     <td>Bias table:</td>
     <td class="raw_files"><a download="bias_table.txt.gz" href="data/bias_table.txt.gz">bias_table.txt.gz</a></td>
   </tr>
+  '''
+    if os.name != 'nt': of.write(ostr)
+    ostr = '''
   <tr>
     <td>Junction variance table:</td>
     <td class="raw_files"><a download="junvar.txt" href="data/junvar.txt">junvar.txt</a></td>
   </tr>
 '''
     # if args.annotation
-    of.write(ostr)
+    if os.name != 'nt': of.write(ostr)
   # done with args.annotation
   #output data that depends on reference
   if args.reference:

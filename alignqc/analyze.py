@@ -47,7 +47,8 @@ def main(args):
 
   # Temporary working directory step 3 of 3 - Cleanup
   if not args.specific_tempdir:
-    rmtree(args.tempdir)
+    if os.name != 'nt':
+      rmtree(args.tempdir)
 
 def setup_tempdir(args):
   if args.specific_tempdir:
