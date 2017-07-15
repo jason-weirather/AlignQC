@@ -27,7 +27,7 @@ setup(
   ],
   keywords='bioinformatics, sequence, alignment',
   packages=['alignqc'],
-  install_requires = ['seq-tools==0.3.0'],
+  install_requires = ['seq-tools==1.0.0'],
   entry_points = {
     'console_scripts':['alignqc=alignqc.alignqc:main']
   }

@@ -628,104 +628,111 @@ def make_data_bam_annotation(args):
       tlog.write(cmd)
   tlog.stop()
 
+  ## For the bias data we need to downsample
+  ## Using some system utilities to accomplish this
+  sys.stderr.write("downsampling mappings for bias calculation\n")
+  cmd0 = 'zcat'
+  cmd1 = 'sort -R -S1G -T '+args.tempdir+'/temp'
+  cmd2 = 'head -n '+str(args.max_bias_data)
+  cmd3 = 'sort -k3,3 -k5,5n -k 6,6n -S1G -T '+args.tempdir+'/temp'
+  inf = open(args.tempdir+'/data/best.sorted.gpd.gz')
+  of = gzip.open(args.tempdir+'/temp/best.random.sorted.gpd.gz','w')
   if os.name != 'nt':
-    ## For the bias data we need to downsample
-    ## Using some system utilities to accomplish this
-    sys.stderr.write("downsampling mappings for bias calculation\n")
-    inf = gzip.open(args.tempdir+'/data/best.sorted.gpd.gz')
-    of = gzip.open(args.tempdir+'/temp/best.random.sorted.gpd.gz','w')
-    cmd1 = 'sort -R --parallel='+str(args.threads)+' -S1G -T '+args.tempdir+'/temp'
-    cmd2 = 'head -n '+str(args.max_bias_data)
-    cmd3 = 'sort -k3,3 -k5,5n -k 6,6n --parallel='+str(args.threads)+' -S1G -T '+args.tempdir+'/temp'
-    p1 = Popen(cmd1.split(),stdin=inf,stdout=PIPE)
+    p0 = Popen(cmd0.split(),stdin=inf,stdout=PIPE)
+    p1 = Popen(cmd1.split(),stdin=p0.stdout,stdout=PIPE)
     p2 = Popen(cmd2.split(),stdin=p1.stdout,stdout=PIPE)
     p3 = Popen(cmd3.split(),stdin=p2.stdout,stdout=PIPE)
-    for line in p3.stdout:
-      of.write(line)
-    p3.communicate()
-    p2.communicate()
-    p1.communicate()
-    #p0.communicate()
-    of.close()
-    inf.close()
+  else:
+    sys.stderr.write("WARNING: Windows OS detected. using shell.")
+    p0 = Popen(cmd0,stdin=inf,stdout=PIPE,shell=True)
+    p1 = Popen(cmd1,stdin=p0.stdout,stdout=PIPE,shell=True)
+    p2 = Popen(cmd2,stdin=p1.stdout,stdout=PIPE,shell=True)
+    p3 = Popen(cmd3,stdin=p2.stdout,stdout=PIPE,shell=True)
+  for line in p3.stdout:
+    of.write(line)
+  p3.communicate()
+  p2.communicate()
+  p1.communicate()
+  p0.communicate()
+  of.close()
+  inf.close()
+  # now downsample annotations
+  sys.stderr.write("Downsampling annotations for bias\n")
+  inf = gzip.open(args.tempdir+'/temp/best.random.sorted.gpd.gz')
+  rnames = set()
+  for line in inf:
+    f = line.rstrip().split("\t")
+    rnames.add(f[0])
+  inf.close()
+  of = gzip.open(args.tempdir+'/temp/annotbest.random.txt.gz','w')
+  inf = gzip.open(args.tempdir+'/data/annotbest.txt.gz')
+  for line in inf:
+    f = line.rstrip().split("\t")
+    if f[1] in rnames: of.write(line)
+  inf.close()
+  of.close()
 
-    # now downsample annotations
-    sys.stderr.write("Downsampling annotations for bias\n")
-    inf = gzip.open(args.tempdir+'/temp/best.random.sorted.gpd.gz')
-    rnames = set()
-    for line in inf:
-      f = line.rstrip().split("\t")
-      rnames.add(f[0])
-    inf.close()
-    of = gzip.open(args.tempdir+'/temp/annotbest.random.txt.gz','w')
-    inf = gzip.open(args.tempdir+'/data/annotbest.txt.gz')
-    for line in inf:
-      f = line.rstrip().split("\t")
-      if f[1] in rnames: of.write(line)
-    inf.close()
-    of.close()
-
-    tlog.start("use annotations to check for 5' to 3' biase")
-    # 11. Use annotation outputs to check for  bias
-    sys.stderr.write("Prepare bias data\n")
-    cmd = udir+'/annotated_read_bias_analysis.py '+\
+  tlog.start("use annotations to check for 5' to 3' biase")
+  # 11. Use annotation outputs to check for  bias
+  sys.stderr.write("Prepare bias data\n")
+  cmd = udir+'/annotated_read_bias_analysis.py '+\
         args.tempdir+'/temp/best.random.sorted.gpd.gz '+\
         args.annotation+' '+ args.tempdir+'/temp/annotbest.random.txt.gz '+\
         '-o '+args.tempdir+'/data/bias_table.txt.gz '+\
         '--output_counts '+args.tempdir+'/data/bias_counts.txt '+\
         '--allow_overflowed_matches '+\
         '--specific_tempdir '+args.tempdir+'/temp'
-    sys.stderr.write(cmd+"\n")
-    annotated_read_bias_analysis.external_cmd(cmd)
-    tlog.write(cmd)
-    tlog.stop()
+  sys.stderr.write(cmd+"\n")
+  annotated_read_bias_analysis.external_cmd(cmd)
+  tlog.write(cmd)
+  tlog.stop()
 
-    tlog.start("plot bias png")
-    # 12. Plot bias
-    cmd = args.rscript_path+' '+udir+'/plot_bias.r '+args.tempdir+'/data/bias_table.txt.gz '+\
+  tlog.start("plot bias png")
+  # 12. Plot bias
+  cmd = args.rscript_path+' '+udir+'/plot_bias.r '+args.tempdir+'/data/bias_table.txt.gz '+\
         args.tempdir+'/plots/bias.png'
-    sys.stderr.write(cmd+"\n")
-    mycall(cmd,args.tempdir+'/logs/bias_png.log')
-    tlog.write(cmd)
-    tlog.stop()
+  sys.stderr.write(cmd+"\n")
+  mycall(cmd,args.tempdir+'/logs/bias_png.log')
+  tlog.write(cmd)
+  tlog.stop()
 
-    tlog.start("plot bias pdf")
-    cmd = args.rscript_path+' '+udir+'/plot_bias.r '+args.tempdir+'/data/bias_table.txt.gz '+\
-          args.tempdir+'/plots/bias.pdf'
-    sys.stderr.write(cmd+"\n")
-    mycall(cmd,args.tempdir+'/logs/bias_pdf.log')
-    tlog.write(cmd)
-    tlog.stop()
+  tlog.start("plot bias pdf")
+  cmd = args.rscript_path+' '+udir+'/plot_bias.r '+args.tempdir+'/data/bias_table.txt.gz '+\
+        args.tempdir+'/plots/bias.pdf'
+  sys.stderr.write(cmd+"\n")
+  mycall(cmd,args.tempdir+'/logs/bias_pdf.log')
+  tlog.write(cmd)
+  tlog.stop()
 
-    tlog.start("Prepare junction variance data")
-    # 13. Get distances of observed junctions from reference junctions
-    cmd = udir+'/gpd_to_junction_variance.py -r '+\
+  tlog.start("Prepare junction variance data")
+  # 13. Get distances of observed junctions from reference junctions
+  cmd = udir+'/gpd_to_junction_variance.py -r '+\
         args.annotation+' '+\
         args.tempdir+'/temp/best.random.sorted.gpd.gz '+\
         '--specific_tempdir '+args.tempdir+'/temp '+\
         '-o '+args.tempdir+'/data/junvar.txt '+\
         '--threads '+str(args.threads)
-    sys.stderr.write(cmd+"\n")
-    gpd_to_junction_variance.external_cmd(cmd)
-    tlog.write(cmd)
-    tlog.stop()
+  sys.stderr.write(cmd+"\n")
+  gpd_to_junction_variance.external_cmd(cmd)
+  tlog.write(cmd)
+  tlog.stop()
 
-    tlog.start("plot junvar png")
-    # 14. Junction distances
-    cmd = args.rscript_path+' '+udir+'/plot_junvar.r '+args.tempdir+'/data/junvar.txt '+\
+  tlog.start("plot junvar png")
+  # 14. Junction distances
+  cmd = args.rscript_path+' '+udir+'/plot_junvar.r '+args.tempdir+'/data/junvar.txt '+\
         args.tempdir+'/plots/junvar.png'
-    sys.stderr.write(cmd+"\n")
-    mycall(cmd,args.tempdir+'/logs/junvar_png.log')
-    tlog.write(cmd)
-    tlog.stop()
+  sys.stderr.write(cmd+"\n")
+  mycall(cmd,args.tempdir+'/logs/junvar_png.log')
+  tlog.write(cmd)
+  tlog.stop()
 
-    tlog.start("plot junvar pdf")
-    cmd = args.rscript_path+' '+udir+'/plot_junvar.r '+args.tempdir+'/data/junvar.txt '+\
+  tlog.start("plot junvar pdf")
+  cmd = args.rscript_path+' '+udir+'/plot_junvar.r '+args.tempdir+'/data/junvar.txt '+\
         args.tempdir+'/plots/junvar.pdf'
-    sys.stderr.write(cmd+"\n")
-    mycall(cmd,args.tempdir+'/logs/junvar_pdf.log')
-    tlog.write(cmd)
-    tlog.stop()
+  sys.stderr.write(cmd+"\n")
+  mycall(cmd,args.tempdir+'/logs/junvar_pdf.log')
+  tlog.write(cmd)
+  tlog.stop()
 
   return
 

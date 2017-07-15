@@ -132,7 +132,7 @@ def do_locus(annots,refs,reads,args):
 
 def sort_ref(args):
   sys.stderr.write("Sorting in reference genePred\n")
-  cmd = 'sort --parallel='+str(args.threads)+' -S2G -k3,3 -k5,5n -k6,6n'
+  cmd = 'sort -S2G -k3,3 -k5,5n -k6,6n'
   of = open(args.tempdir+'/ref.sorted.gpd','w')
   p = Popen(cmd.split(),stdin=PIPE,stdout=of)
   refgpd = {}
