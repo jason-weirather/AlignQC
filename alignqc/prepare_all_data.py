@@ -58,7 +58,7 @@ def main(args):
 
   ## Extract data that can be realized from the bam
   make_data_bam(args)
-  
+
 
   ## Extract data that can be realized from the bam and reference
   if args.reference:
@@ -92,7 +92,7 @@ class TimeLog:
 def make_data_bam(args):
   global tlog
   # Get the data necessary for making tables and reports
-  
+
   tlog.start("traverse bam and preprocess")
   # 1. Traverse bam and store alignment mappings ordered by query name
   udir = os.path.dirname(os.path.realpath(__file__))
@@ -144,7 +144,7 @@ def make_data_bam(args):
   sys.stderr.write("Can we find any known read types\n")
   cmd = udir+'/get_platform_report.py '+args.tempdir+'/data/lengths.txt.gz '
   cmd += args.tempdir+'/data/special_report'
-  sys.stderr.write(cmd+"\n") 
+  sys.stderr.write(cmd+"\n")
   get_platform_report.external_cmd(cmd)
   tlog.write(cmd)
   tlog.stop()
@@ -155,7 +155,7 @@ def make_data_bam(args):
   with open(args.tempdir+'/data/special_report') as inf:
     for line in inf:
       f = line.rstrip().split("\t")
-      if f[0]=='PB': 
+      if f[0]=='PB':
         do_pb = True
         break
   if do_pb:
@@ -182,7 +182,7 @@ def make_data_bam(args):
   cmd += ' -l '+args.tempdir+"/data/chrlens.txt -o "+args.tempdir+'/temp/depth.coverage-strata.sorted.bed.gz'
   cmd += ' --output_key '+args.tempdir+'/temp/coverage-strata.key'
   cmd += ' --minimum_coverage 100000'
-  bed_depth_to_stratified_coverage(cmd) 
+  bed_depth_to_stratified_coverage(cmd)
 
   global rcnt #read count
   rcnt = 0
@@ -429,7 +429,7 @@ def make_data_bam_annotation(args):
   sys.stderr.write(cmd+"\n")
   get_depth_subset.external_cmd(cmd)
   tlog.write(cmd)
-  tlog.stop()  
+  tlog.stop()
 
   tlog.start("get per-intron subset")
   cmd = udir+'/get_depth_subset.py '+args.tempdir+'/data/depth.sorted.bed.gz '
@@ -447,7 +447,7 @@ def make_data_bam_annotation(args):
   sys.stderr.write(cmd+"\n")
   get_depth_subset.external_cmd(cmd)
   tlog.write(cmd)
-  tlog.stop()  
+  tlog.stop()
 
   tlog.start("plot feature depth png")
   # 3. Plot the feature depth
@@ -458,7 +458,7 @@ def make_data_bam_annotation(args):
   cmd += args.tempdir+'/data/intergenicdepth.bed.gz '
   cmd += args.tempdir+'/plots/feature_depth.png'
   sys.stderr.write(cmd+"\n")
-  mycall(cmd,args.tempdir+'/logs/featuredepth_png')  
+  mycall(cmd,args.tempdir+'/logs/featuredepth_png')
   tlog.write(cmd)
   tlog.stop()
 
@@ -470,7 +470,7 @@ def make_data_bam_annotation(args):
   cmd += args.tempdir+'/data/intergenicdepth.bed.gz '
   cmd += args.tempdir+'/plots/feature_depth.pdf'
   sys.stderr.write(cmd+"\n")
-  mycall(cmd,args.tempdir+'/logs/featuredepth_pdf')  
+  mycall(cmd,args.tempdir+'/logs/featuredepth_pdf')
   tlog.write(cmd)
   tlog.stop()
 
@@ -481,7 +481,7 @@ def make_data_bam_annotation(args):
   cmd += args.tempdir+'/data/read_genomic_features.txt.gz '
   cmd += args.tempdir+'/plots/read_genomic_features.png'
   sys.stderr.write(cmd+"\n")
-  mycall(cmd,args.tempdir+'/logs/read_genomic_features_png')  
+  mycall(cmd,args.tempdir+'/logs/read_genomic_features_png')
   tlog.write(cmd)
   tlog.stop()
 
@@ -490,11 +490,11 @@ def make_data_bam_annotation(args):
   cmd += args.tempdir+'/data/read_genomic_features.txt.gz '
   cmd += args.tempdir+'/plots/read_genomic_features.pdf'
   sys.stderr.write(cmd+"\n")
-  mycall(cmd,args.tempdir+'/logs/read_genomic_features_pdf')  
+  mycall(cmd,args.tempdir+'/logs/read_genomic_features_pdf')
   tlog.write(cmd)
   tlog.stop()
 
-  tlog.start("annotate the reads")  
+  tlog.start("annotate the reads")
   # 5. annotated the best mappend read mappings
   cmd = 'gpd_annotate.py '+args.tempdir+'/data/best.sorted.gpd.gz -r '+args.annotation+' -o '+args.tempdir+'/data/annotbest.txt.gz'
   if args.threads:
@@ -513,19 +513,19 @@ def make_data_bam_annotation(args):
   cmd += args.tempdir+'/data/annotbest.txt.gz '
   cmd += args.tempdir+'/plots/transcript_distro.png'
   sys.stderr.write(cmd+"\n")
-  mycall(cmd,args.tempdir+'/logs/transcript_distro_png')  
+  mycall(cmd,args.tempdir+'/logs/transcript_distro_png')
   tlog.write(cmd)
   tlog.stop()
-  
+
   tlog.start("plot by transcript length png")
   sys.stderr.write("Make plots from transcript lengths\n")
   cmd = args.rscript_path+' '+udir+'/plot_transcript_lengths.r '
   cmd += args.tempdir+'/data/annotbest.txt.gz '
   cmd += args.tempdir+'/plots/transcript_distro.pdf'
   sys.stderr.write(cmd+"\n")
-  mycall(cmd,args.tempdir+'/logs/transcript_distro_pdf')  
+  mycall(cmd,args.tempdir+'/logs/transcript_distro_pdf')
   tlog.write(cmd)
-  tlog.stop()  
+  tlog.stop()
 
   tlog.start("make length distribution from annotations")
   # 7. Make length distributions for plotting
@@ -545,7 +545,7 @@ def make_data_bam_annotation(args):
   cmd += args.tempdir+'/data/annot_lengths.txt.gz '
   cmd += args.tempdir+'/plots/annot_lengths.png'
   sys.stderr.write(cmd+"\n")
-  mycall(cmd,args.tempdir+'/logs/annot_lengths_png')  
+  mycall(cmd,args.tempdir+'/logs/annot_lengths_png')
   tlog.write(cmd)
   tlog.stop()
 
@@ -554,7 +554,7 @@ def make_data_bam_annotation(args):
   cmd += args.tempdir+'/data/annot_lengths.txt.gz '
   cmd += args.tempdir+'/plots/annot_lengths.pdf'
   sys.stderr.write(cmd+"\n")
-  mycall(cmd,args.tempdir+'/logs/annot_lengths_pdf')  
+  mycall(cmd,args.tempdir+'/logs/annot_lengths_pdf')
   tlog.write(cmd)
   tlog.stop()
 
@@ -637,10 +637,17 @@ def make_data_bam_annotation(args):
   cmd3 = 'sort -k3,3 -k5,5n -k 6,6n --parallel='+str(args.threads)+' -S1G -T '+args.tempdir+'/temp'
   inf = open(args.tempdir+'/data/best.sorted.gpd.gz')
   of = gzip.open(args.tempdir+'/temp/best.random.sorted.gpd.gz','w')
-  p0 = Popen(cmd0.split(),stdin=inf,stdout=PIPE)
-  p1 = Popen(cmd1.split(),stdin=p0.stdout,stdout=PIPE)
-  p2 = Popen(cmd2.split(),stdin=p1.stdout,stdout=PIPE)
-  p3 = Popen(cmd3.split(),stdin=p2.stdout,stdout=PIPE)
+  if os.name != 'nt':
+    p0 = Popen(cmd0.split(),stdin=inf,stdout=PIPE)
+    p1 = Popen(cmd1.split(),stdin=p0.stdout,stdout=PIPE)
+    p2 = Popen(cmd2.split(),stdin=p1.stdout,stdout=PIPE)
+    p3 = Popen(cmd3.split(),stdin=p2.stdout,stdout=PIPE)
+  else:
+    sys.stderr.write("WARNING: Windows OS detected. using shell.")
+    p0 = Popen(cmd0,stdin=inf,stdout=PIPE,shell=True)
+    p1 = Popen(cmd1,stdin=p0.stdout,stdout=PIPE,shell=True)
+    p2 = Popen(cmd2,stdin=p1.stdout,stdout=PIPE,shell=True)
+    p3 = Popen(cmd3,stdin=p2.stdout,stdout=PIPE,shell=True)
   for line in p3.stdout:
     of.write(line)
   p3.communicate()
@@ -760,7 +767,7 @@ def mycall(cmd,lfile):
 #  parser.add_argument('--max_query_gap',type=int,help="for testing gapped alignment advantge")
 #  parser.add_argument('--max_target_gap',type=int,default=500000,help="for testing gapped alignment advantage")
 #  parser.add_argument('--required_fractional_improvement',type=float,default=0.2,help="require gapped alignment to be this much better (in alignment length) than single alignment to consider it.")
-#  
+#
 #  ### Parameters for locus analysis
 #  parser.add_argument('--do_loci',action='store_true',help="This analysis is time consuming at the moment so don't do it unless necessary")
 #  parser.add_argument('--min_depth',type=float,default=1.5,help="require this or more read depth to consider locus")
@@ -771,7 +778,7 @@ def mycall(cmd,lfile):
 #  ### Params for alignment error plot
 #  parser.add_argument('--alignment_error_scale',nargs=6,type=float,help="<ins_min> <ins_max> <mismatch_min> <mismatch_max> <del_min> <del_max>")
 #  parser.add_argument('--alignment_error_max_length',type=int,default=100000,help="The maximum number of alignment bases to calculate error from")
-#  
+#
 #  ### Params for context error plot
 #  parser.add_argument('--context_error_scale',nargs=6,type=float,help="<ins_min> <ins_max> <mismatch_min> <mismatch_max> <del_min> <del_max>")
 #  parser.add_argument('--context_error_stopping_point',type=int,default=1000,help="Sample at least this number of each context")
@@ -790,7 +797,7 @@ def setup_tempdir(args):
   if not os.path.exists(args.tempdir):
     sys.stderr.write("ERROR: Problem creating temporary directory\n")
     sys.exit()
-  return 
+  return
 
 def external(args):
   main(args)

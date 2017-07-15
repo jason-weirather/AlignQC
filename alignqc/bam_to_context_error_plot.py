@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import argparse, sys, os, random, inspect, os, time, gc
+import argparse, sys, os, random, inspect, os, time, gc, gzip
 from shutil import rmtree
 from multiprocessing import cpu_count
 from tempfile import mkdtemp, gettempdir
@@ -15,7 +15,10 @@ from seqtools.format.fasta import FASTAData
 def main(args):
   # make our error profile report
   sys.stderr.write("Reading reference fasta\n")
-  ref = FASTAData(open(args.reference).read())
+  if args.reference[-3:] == '.gz':
+     ref = FASTAData(gzip.open(args.reference).read())
+  else:
+     ref = FASTAData(open(args.reference).read())
   sys.stderr.write("Reading index\n")
   epf = ErrorProfileFactory()
   bf = BAMFile(args.input,BAMFile.Options(reference=ref))
@@ -45,7 +48,7 @@ def main(args):
       sys.stderr.write(str(z)+" alignments, "+str(con)+" min context coverage\r")
       if args.max_alignments <= z: break
       if args.stopping_point <= con: break
-    
+
   else:
     z = 0
     strand = 'target'
@@ -68,7 +71,7 @@ def main(args):
     bind.destroy()
   sys.stderr.write('working with:'+"\n")
   sys.stderr.write(str(z)+" alignments, "+str(con)+" min context coverage"+"\n")
-  epf.write_context_error_report(args.tempdir+'/err.txt',strand)  
+  epf.write_context_error_report(args.tempdir+'/err.txt',strand)
 
   for ofile in args.output:
     cmd = args.rscript_path+' '+os.path.dirname(os.path.realpath(__file__))+'/plot_base_error_context.r '+args.tempdir+'/err.txt '+ofile+' '
@@ -132,7 +135,7 @@ def setup_tempdir(args):
   if not os.path.exists(args.tempdir):
     sys.stderr.write("ERROR: Problem creating temporary directory\n")
     sys.exit()
-  return 
+  return
 
 def external_cmd(cmd):
   cache_argv = sys.argv

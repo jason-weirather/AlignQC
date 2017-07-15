@@ -139,12 +139,15 @@ def make_html(args):
     # deal with annotations
     ref_genes = {}
     ref_transcripts = {}
-    with open(args.annotation) as inf:
-      gs = GPDStream(inf)  
-      for gpd in gs:
-        tx_to_gene[gpd.transcript_name] = gpd.gene_name
-        ref_genes[gpd.gene_name] = [0,0]
-        ref_transcripts[gpd.transcript_name] = [0,0]
+    if args.annotation[-3:] == '.gz':
+        gs = GPDStream(gzip.open(args.annotation))
+    else:
+        gs = GPDStream(open(args.annotation))
+    #gs = GPDStream(inf)
+    for gpd in gs:
+       tx_to_gene[gpd.transcript_name] = gpd.gene_name
+       ref_genes[gpd.gene_name] = [0,0]
+       ref_transcripts[gpd.transcript_name] = [0,0]
     inf = gzip.open(args.tempdir+'/data/annotbest.txt.gz')
     for line in inf:
       f = line.rstrip().split("\t")
@@ -258,7 +261,7 @@ def make_html(args):
   of.write(ostr+"\n")
   of.write(args.input)
   ostr = '''
-    </div>  
+    </div>
   </div>
   <div class="clear"></div>
   <div class="top_block">
@@ -357,7 +360,7 @@ def make_html(args):
   <div class="two_thirds right">
     <div class="rhead">Summary [<a download="alignments.pdf" href="plots/alignments.pdf">pdf</a>]</div>
     <img src="plots/alignments.png" alt="alignments_png" />
-  </div>   
+  </div>
   <div class="clear"></div>
   <div class="two_thirds right">
     <div class="rhead">Exon counts of best alignments [<a download="exon_size_distro.pdf" href="plots/exon_size_distro.pdf">pdf</a>]</div>
@@ -382,7 +385,7 @@ def make_html(args):
     if 'PB' in special:
       # We have pacbio specific report
       pb = {}
-      for f in special['PB']: 
+      for f in special['PB']:
         pb[f[0]]=f[1]
         if re.search('\.',f[1]): pb[f[0]]=float(f[1])
       ostr = '''
@@ -402,7 +405,7 @@ def make_html(args):
       of.write('      <tr><td>Reads</td><td>'+addcommas(int(pb['Min Reads Per Cell']))+'</td><td>'+addcommas(int(pb['Avg Reads Per Cell']))+'</td><td>'+addcommas(int(pb['Max Reads Per Cell']))+'</td></tr>')
       of.write('      <tr><td>Molecules</td><td>'+addcommas(int(pb['Min Molecules Per Cell']))+'</td><td>'+addcommas(int(pb['Avg Molecules Per Cell']))+'</td><td>'+addcommas(int(pb['Max Molecules Per Cell']))+'</td></tr>')
       of.write('      <tr><td>Aligned Molecules</td><td>'+addcommas(int(pb['Min Aligned Molecules Per Cell']))+'</td><td>'+addcommas(int(pb['Avg Aligned Molecules Per Cell']))+'</td><td>'+addcommas(int(pb['Max Aligned Molecules Per Cell']))+'</td></tr>')
-      ostr = '''        
+      ostr = '''
       </table>
 '''
       of.write(ostr)
@@ -491,7 +494,7 @@ def make_html(args):
     of.write(ostr)
     vs = reversed(sorted(ref_transcripts.keys(),key=lambda x: sum(ref_transcripts[x]))[-5:])
     for v in vs:
-      of.write('      <tr><td class="smaller_text">'+v+'</td><td class="smaller_text">'+tx_to_gene[v]+'</td><td class="smaller_text">'+addcommas(ref_transcripts[v][0])+'</td><td class="smaller_text">'+addcommas(ref_transcripts[v][1])+'</td><td class="smaller_text">'+addcommas(sum(ref_transcripts[v]))+'</td></tr>'+"\n")  
+      of.write('      <tr><td class="smaller_text">'+v+'</td><td class="smaller_text">'+tx_to_gene[v]+'</td><td class="smaller_text">'+addcommas(ref_transcripts[v][0])+'</td><td class="smaller_text">'+addcommas(ref_transcripts[v][1])+'</td><td class="smaller_text">'+addcommas(sum(ref_transcripts[v]))+'</td></tr>'+"\n")
     ostr = '''
     </table>
   </div>
@@ -567,7 +570,7 @@ def make_html(args):
   <div class="clear"></div>
 '''
     # still in annotations check
-    of.write(ostr)  
+    of.write(ostr)
   # done with annotations check
   ostr = '''
 </div>
@@ -621,7 +624,7 @@ def make_html(args):
 '''
       # still in args.annotation
       of.write(ostr)
-    #done with args.anotation 
+    #done with args.anotation
     ostr = '''
   <div class="one_half left">
     <table class="data_table one_third">
@@ -647,7 +650,7 @@ def make_html(args):
 '''
     # still in do_loci or annotations conditional
     of.write(ostr)
-    if args.do_loci: 
+    if args.do_loci:
       ostr = '''
   <div class="one_half left">
     <div class="rhead">Locus detection rarefraction [<a download="locus_rarefraction.pdf" href="plots/locus_rarefraction.pdf">pdf</a>]</div>
@@ -754,7 +757,7 @@ def make_html(args):
     #if args.reference
     of.write(ostr)
   # finished with args.reference condition
- 
+
   ##############################
   # 8. Raw data block
   ostr = '''
@@ -851,7 +854,7 @@ def make_html(args):
     of.write(ostr)
   # done with args.annotation
   #output data that depends on reference
-  if args.reference: 
+  if args.reference:
     ostr = '''
   <tr>
     <td>Alignment errors data:</td>
@@ -909,7 +912,7 @@ def addcommas(val):
 #  parser.add_argument('--max_query_gap',type=int,help="for testing gapped alignment advantge")
 #  parser.add_argument('--max_target_gap',type=int,default=500000,help="for testing gapped alignment advantage")
 #  parser.add_argument('--required_fractional_improvement',type=float,default=0.2,help="require gapped alignment to be this much better (in alignment length) than single alignment to consider it.")
-#  
+#
 #  ### Parameters for locus analysis
 #  parser.add_argument('--min_depth',type=float,default=1.5,help="require this or more read depth to consider locus")
 #  parser.add_argument('--min_coverage_at_depth',type=float,default=0.8,help="require at leas this much of the read be covered at min_depth")
@@ -918,7 +921,7 @@ def addcommas(val):
 #  ### Params for alignment error plot
 #  parser.add_argument('--alignment_error_scale',nargs=6,type=float,help="<ins_min> <ins_max> <mismatch_min> <mismatch_max> <del_min> <del_max>")
 #  parser.add_argument('--alignment_error_max_length',type=int,default=100000,help="The maximum number of alignment bases to calculate error from")
-#  
+#
 #  ### Params for context error plot
 #  parser.add_argument('--context_error_scale',nargs=6,type=float,help="<ins_min> <ins_max> <mismatch_min> <mismatch_max> <del_min> <del_max>")
 #  parser.add_argument('--context_error_stopping_point',type=int,default=1000,help="Sample at least this number of each context")
@@ -934,7 +937,7 @@ def addcommas(val):
 #  if not os.path.exists(args.tempdir):
 #    sys.stderr.write("ERROR: Problem creating temporary directory\n")
 #    sys.exit()
-#  return 
+#  return
 
 def external(args,version=None):
   #set our global by the input version
@@ -947,4 +950,3 @@ if __name__=="__main__":
   #do our inputs
   #args = do_inputs()
   #main(args)
-

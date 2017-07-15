@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """Calculate non-context based errors"""
 
-import argparse, sys, os, time, gc
+import argparse, sys, os, time, gc, gzip
 from shutil import rmtree
 from tempfile import mkdtemp, gettempdir
 from subprocess import call
@@ -14,7 +14,10 @@ from seqtools.format.sam.bam.bamindex import BAMIndexRandomAccessPrimary as BIRA
 def main(args):
 
   sys.stderr.write("Reading our reference Fasta\n")
-  ref = FASTAData(open(args.reference,'rb').read())
+  if args.reference[-3:] == '.gz':
+     ref = FASTAData(gzip.open(args.reference).read())
+  else:
+     ref = FASTAData(open(args.reference).read())
   sys.stderr.write("Finished reading our reference Fasta\n")
   bf = BAMFile(args.input,BAMFile.Options(reference=ref))
   bind = None
@@ -80,7 +83,7 @@ def main(args):
   epf.close()
   time.sleep(5)
   gc.collect()
-  time.sleep(5)  
+  time.sleep(5)
   # Temporary working directory step 3 of 3 - Cleanup
   if not args.specific_tempdir:
     rmtree(args.tempdir)
@@ -124,7 +127,7 @@ def setup_tempdir(args):
   if not os.path.exists(args.tempdir):
     sys.stderr.write("ERROR: Problem creating temporary directory\n")
     sys.exit()
-  return 
+  return
 
 def external_cmd(cmd):
   cache_argv = sys.argv
