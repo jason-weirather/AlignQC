@@ -80,7 +80,7 @@ def external_cmd(cmd,version=None):
 
 def do_inputs():
   parser=argparse.ArgumentParser(description="Create an output report",formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-  
+
   label1 = parser.add_argument_group(title="Input parameters",description="Required BAM file.  If reference or annotation is not set, use --no_reference or --no_annotation respectively to continue.")
   label1.add_argument('input',help="INPUT BAM file")
 
@@ -128,7 +128,7 @@ def do_inputs():
   label7 = parser.add_argument_group(title="Alignment error parameters")
   label7.add_argument('--alignment_error_scale',nargs=6,type=float,help="<ins_min> <ins_max> <mismatch_min> <mismatch_max> <del_min> <del_max>")
   label7.add_argument('--alignment_error_max_length',type=int,default=1000000,help="The maximum number of alignment bases to calculate error from")
-  
+
   ### Params for context error plot
   label8 = parser.add_argument_group(title="Context error parameters")
   label8.add_argument('--context_error_scale',nargs=6,type=float,help="<ins_min> <ins_max> <mismatch_min> <mismatch_max> <del_min> <del_max>")
@@ -156,7 +156,9 @@ def do_inputs():
   ex = find_executable('sort')
   if not ex:
      parser.error("sort as a command utility is required but could not be located.  Perhaps you are not using a linux operating system?")
-
+  if os.name == 'nt' and args.threads > 1:
+      args.threads = 1
+      sys.stderr.write("WARNING: Windows OS detected. Operating in single thread mode. close_fds dependencies need resolved before multi-thread windows mode is enabled.\n")
   return args
 
 if __name__=='__main__':

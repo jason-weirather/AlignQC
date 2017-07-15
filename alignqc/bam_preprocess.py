@@ -45,7 +45,7 @@ def do_chunk(ilines,infile,args):
                                        pickle.dumps(value))))
       #results.append([e.value('qname'),zlib.compress(pickle.dumps(value))])
     else:
-      value =  {'qrng':'','tx':'','flag':flag,'qlen':e.original_query_length,'aligned_bases':0}
+      value =  {'qrng':'','tx':'','flag':flag,'qlen':e.original_query_sequence_length,'aligned_bases':0}
       results.append(e.entries.qname+"\t"+base64.b64encode(
                                       zlib.compress(
                                        pickle.dumps(value))))
@@ -80,9 +80,15 @@ def main(args):
   global g_sortpipe
   global g_count
   g_count = 0
-  of = open(args.output,'w')
-  gzippipe = Popen(cmd2.split(),stdout=of,stdin=PIPE,close_fds=True)
-  g_sortpipe = Popen(cmd1.split(),stdout=gzippipe.stdin,stdin=PIPE,close_fds=True)
+  of = open(args.output,'wb')
+  if os.name != 'nt':
+     gzippipe = Popen(cmd2.split(),stdout=of,stdin=PIPE,close_fds=True)
+     g_sortpipe = Popen(cmd1.split(),stdout=gzippipe.stdin,stdin=PIPE,close_fds=True)
+  else:
+     sys.stderr.write("WARNING: Windows OS detected. operating in single thread mode.\n")
+     if args.threads > 1: raise ValueError('Error. --threads must be 1 for windows operation')
+     gzippipe = Popen(cmd2,stdout=of,stdin=PIPE, shell=True)
+     g_sortpipe = Popen(cmd1,stdout=gzippipe.stdin,stdin=PIPE, shell=True)
   inf = gzip.open(bind_path)
   chunksize = args.chunk_size
   buffer = []
@@ -97,7 +103,7 @@ def main(args):
         r = do_chunk(buffer[:],args.input,args)
         process_chunk(r)
       buffer = []
-  if len(buffer) > 0: 
+  if len(buffer) > 0:
     if args.threads > 1:
         p.apply_async(do_chunk,args=(buffer[:],args.input,args),callback=process_chunk)
     else:
@@ -148,7 +154,7 @@ def setup_tempdir(args):
   if not os.path.exists(args.tempdir):
     sys.stderr.write("ERROR: Problem creating temporary directory\n")
     sys.exit()
-  return 
+  return
 
 def external_cmd(cmd):
   #need to save arguments
