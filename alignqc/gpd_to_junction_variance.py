@@ -34,7 +34,7 @@ def main(args):
       exon_end_strings.add(j.left.get_range_string())
   inf.close()
   sys.stderr.write("\n")
-  # Now convert each start or end to list of ranges to overlap 
+  # Now convert each start or end to list of ranges to overlap
   sys.stderr.write("finding start windows\n")
   starts = get_search_ranges_from_strings(exon_start_strings,args)
   sh = BedArrayStream(starts)
@@ -49,7 +49,7 @@ def main(args):
   eh = BedArrayStream(ends)
   ofen = open(args.tempdir+'/ends.bed','w')
   for v in eh:
-    ofen.write("\t".join([str(x) for x in v.get_bed_array()]+[v.payload.get_range_string()])+"\n")  
+    ofen.write("\t".join([str(x) for x in v.get_bed_array()]+[v.payload.get_range_string()])+"\n")
   ofen.close()
   # switch to file based operations to save some memory
   ends = None
@@ -66,6 +66,7 @@ def main(args):
     if args.input[-3:] == '.gz': inf = gzip.open(args.input)
     else: inf = open(args.input)
   gh = GPDStream(inf)
+  sys.stderr.write(str([str(x) for x in gh])+"\n")
   mls = MultiLocusStream([gh,sh,eh])
   z = 0
   global rcnt
@@ -76,21 +77,30 @@ def main(args):
   max_buffer = 100
   tos = gzip.open(args.tempdir+'/starts.txt.gz','w')
   toe = gzip.open(args.tempdir+'/ends.txt.gz','w')
-  p = Pool(processes=args.threads)
-  csize=10
-  results = p.imap_unordered(process_locus,gen_locus(mls,args),chunksize=csize)
-  for r in results:
-    if len(r[0]) > 0:
-      tos.write("\n".join([str(x) for x in r[0]])+"\n")
-    if len(r[1]) > 0:
-      toe.write("\n".join([str(x) for x in r[1]])+"\n")
+  if args.threads > 1:
+    p = Pool(processes=args.threads)
+    csize=10
+    results = p.imap_unordered(process_locus,gen_locus(mls,args),chunksize=csize)
+    for r in results:
+      if len(r[0]) > 0:
+        tos.write("\n".join([str(x) for x in r[0]])+"\n")
+      if len(r[1]) > 0:
+        toe.write("\n".join([str(x) for x in r[1]])+"\n")
+  else:
+    results = []
+    for es in mls:
+      #z += 1
+      #if z%1000 == 0: sys.stderr.write(es.get_range_string()+" locus: "+str(z)+" reads: "+str(rcnt)+"        \r")
+      if len(es.payload[0]) == 0: continue
+      rcnt += len(es.payload[0])
+      sys.stderr.write("hello\n")
+      results.append(process_locus([es,args]))
   tos.close()
   toe.close()
   inf.close()
   sys.stderr.write("\n")
-
+  sys.stderr.write(str(results)+"\n")
   # now we have the distance, we don't actually know if a start is  a start or an end from what have
-  sys.stderr.write("distances are ready to be read\n")
   distances = {}
   sys.stderr.write("Reading start distances\n")
   inf = gzip.open(args.tempdir+'/starts.txt.gz')
@@ -162,7 +172,7 @@ def process_locus(vals):
           min_dist = args.window+10
           num = None
           for v in evstart:
-            if abs(v) < min_dist: 
+            if abs(v) < min_dist:
               min_dist = abs(v)
               num = v
           if num:
@@ -173,7 +183,7 @@ def process_locus(vals):
           min_dist = args.window+10
           num = None
           for v in evend:
-            if abs(v) < min_dist: 
+            if abs(v) < min_dist:
               min_dist = abs(v)
               num = v
           if num:
@@ -225,7 +235,7 @@ def setup_tempdir(args):
   if not os.path.exists(args.tempdir):
     sys.stderr.write("ERROR: Problem creating temporary directory\n")
     sys.exit()
-  return 
+  return
 
 def external_cmd(cmd):
   cache_argv = sys.argv
@@ -237,4 +247,3 @@ def external_cmd(cmd):
 if __name__=="__main__":
   args = do_inputs()
   main(args)
-
