@@ -66,7 +66,6 @@ def main(args):
     if args.input[-3:] == '.gz': inf = gzip.open(args.input)
     else: inf = open(args.input)
   gh = GPDStream(inf)
-  sys.stderr.write(str([str(x) for x in gh])+"\n")
   mls = MultiLocusStream([gh,sh,eh])
   z = 0
   global rcnt
@@ -93,13 +92,12 @@ def main(args):
       #if z%1000 == 0: sys.stderr.write(es.get_range_string()+" locus: "+str(z)+" reads: "+str(rcnt)+"        \r")
       if len(es.payload[0]) == 0: continue
       rcnt += len(es.payload[0])
-      sys.stderr.write("hello\n")
+      #sys.stderr.write("hello\n")
       results.append(process_locus([es,args]))
   tos.close()
   toe.close()
   inf.close()
   sys.stderr.write("\n")
-  sys.stderr.write(str(results)+"\n")
   # now we have the distance, we don't actually know if a start is  a start or an end from what have
   distances = {}
   sys.stderr.write("Reading start distances\n")

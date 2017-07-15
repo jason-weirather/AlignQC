@@ -136,7 +136,10 @@ def sort_ref(args):
   of = open(args.tempdir+'/ref.sorted.gpd','w')
   p = Popen(cmd.split(),stdin=PIPE,stdout=of)
   refgpd = {}
-  inf = open(args.ref_genepred)
+  if args.ref_genepred[-3:] == '.gz':
+     inf = gzip.open(args.ref_genepred)
+  else:
+     inf = open(args.ref_genepred)
   #gs = GPDStream(inf)
   z = 0
   for line in inf:
