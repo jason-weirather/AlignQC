@@ -76,24 +76,14 @@ def main(args):
   max_buffer = 100
   tos = open(args.tempdir+'/starts.txt','w')
   toe = open(args.tempdir+'/ends.txt','w')
-  if args.threads > 1:
-    p = Pool(processes=args.threads)
-    csize=10
-    results = p.imap_unordered(process_locus,gen_locus(mls,args),chunksize=csize)
-    for r in results:
-      if len(r[0]) > 0:
-        tos.write("\n".join([str(x) for x in r[0]])+"\n")
-      if len(r[1]) > 0:
-        toe.write("\n".join([str(x) for x in r[1]])+"\n")
-  else:
-    results = []
-    for es in mls:
-      #z += 1
-      #if z%1000 == 0: sys.stderr.write(es.get_range_string()+" locus: "+str(z)+" reads: "+str(rcnt)+"        \r")
-      if len(es.payload[0]) == 0: continue
-      rcnt += len(es.payload[0])
-      #sys.stderr.write("hello\n")
-      results.append(process_locus([es,args]))
+  p = Pool(processes=args.threads)
+  csize=10
+  results = p.imap_unordered(process_locus,gen_locus(mls,args),chunksize=csize)
+  for r in results:
+    if len(r[0]) > 0:
+      tos.write("\n".join([str(x) for x in r[0]])+"\n")
+    if len(r[1]) > 0:
+      toe.write("\n".join([str(x) for x in r[1]])+"\n")
   tos.close()
   toe.close()
   inf.close()
