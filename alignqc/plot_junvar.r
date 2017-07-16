@@ -28,9 +28,9 @@ make_image<-function(d,outfile,input_width,text_adjust) {
   print(yh)
   ymax = max(y0,y1)
   plot(1,type='n',xlim=c(0,2),ylim=c(0,ymax),xaxt='n',xlab="",ylab="Number of exon boundries",bty="n",cex.lab=text_adjust,yaxt="n")
-  rect(0.25,0,1,y0,lwd=input_width,col="#86C67C")
-  rect(1,0,1.75,yl,lwd=input_width,col="#B0E2FF")
-  rect(1,yl,1.75,yh+yl,lwd=input_width,col="#8968CD")
+  if(y0 >0) { rect(0.25,0,1,y0,lwd=input_width,col="#86C67C") }
+  if(yl > 0) {rect(1,0,1.75,yl,lwd=input_width,col="#B0E2FF") }
+  if(yh >0) {rect(1,yl,1.75,yh+yl,lwd=input_width,col="#8968CD") }
   axis(side=1,at=c(0.5,1.5),labels=c('perfect','imperfect'),lwd=input_width,cex.axis=text_adjust,las=2)
   axis(side=2,lwd=input_width,cex.axis=text_adjust)
 
@@ -49,7 +49,9 @@ make_image<-function(d,outfile,input_width,text_adjust) {
         step=0.5; 
         mycol = "#8968CD"
       }
-      rect(i+step,0,i+1+step,wrongvals[wrongvals[,1]==i,2],lwd=input_width, col=mycol)
+      if(length(wrongvals[wrongvals[,1]==i,2]) > 0 && wrongvals[wrongvals[,1]==i,2]!=0) {
+        rect(i+step,0,i+1+step,wrongvals[wrongvals[,1]==i,2],lwd=input_width, col=mycol)
+      }
     }
   }
   axlabs = c()
