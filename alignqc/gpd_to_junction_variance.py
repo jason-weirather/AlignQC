@@ -74,8 +74,8 @@ def main(args):
   #end_distances = []
   buffer = []
   max_buffer = 100
-  tos = gzip.open(args.tempdir+'/starts.txt.gz','w')
-  toe = gzip.open(args.tempdir+'/ends.txt.gz','w')
+  tos = open(args.tempdir+'/starts.txt','w')
+  toe = open(args.tempdir+'/ends.txt','w')
   if args.threads > 1:
     p = Pool(processes=args.threads)
     csize=10
@@ -101,14 +101,14 @@ def main(args):
   # now we have the distance, we don't actually know if a start is  a start or an end from what have
   distances = {}
   sys.stderr.write("Reading start distances\n")
-  inf = gzip.open(args.tempdir+'/starts.txt.gz')
+  inf = open(args.tempdir+'/starts.txt')
   for line in inf:
     d = int(line.rstrip())
     if d not in distances: distances[d] = 0
     distances[d] += 1
   inf.close()
   sys.stderr.write("Reading end distances\n")
-  inf = gzip.open(args.tempdir+'/ends.txt.gz')
+  inf = open(args.tempdir+'/ends.txt')
   for line in inf:
     d = int(line.rstrip())
     if d not in distances: distances[d] = 0
