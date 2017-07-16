@@ -200,7 +200,7 @@ def make_html(args):
     #Get evidence counts for bias
     bias_tx_count = None
     bias_read_count = None
-    if os.name != 'nt':
+    if os.name != 'nt' and sys.platform != 'darwin':
       with open(args.tempdir+'/data/bias_counts.txt') as inf:
         for line in inf:
           f = line.rstrip().split("\t")
@@ -557,7 +557,7 @@ def make_html(args):
   </div>
   '''
     of.write(ostr)
-    if os.name != 'nt':
+    if os.name != 'nt' and sys.platform != 'darwin':
       ostr = '''
   <div class="one_half left">
     <div class="rhead">Bias in alignment to reference transcripts [<a download="bias.pdf" href="plots/bias.pdf">pdf</a>]</div>
@@ -747,7 +747,7 @@ def make_html(args):
 <div class="clear"></div>
 '''
     of.write(ostr)
-  if args.annotation and os.name != 'nt':
+  if args.annotation and os.name != 'nt' and sys.platform != 'darwin':
     # We can output the junction variance plot
     ostr = '''
   <div class="left full_length">
@@ -857,7 +857,7 @@ def make_html(args):
     <td class="raw_files"><a download="bias_table.txt.gz" href="data/bias_table.txt.gz">bias_table.txt.gz</a></td>
   </tr>
   '''
-    if os.name != 'nt': of.write(ostr)
+    if os.name != 'nt' and sys.platform != 'darwin': of.write(ostr)
     ostr = '''
   <tr>
     <td>Junction variance table:</td>
@@ -865,7 +865,7 @@ def make_html(args):
   </tr>
 '''
     # if args.annotation
-    if os.name != 'nt': of.write(ostr)
+    if os.name != 'nt' and sys.platform != 'darwin': of.write(ostr)
   # done with args.annotation
   #output data that depends on reference
   if args.reference:

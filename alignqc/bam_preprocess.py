@@ -75,7 +75,10 @@ def main(args):
   #parallel_thread = ''
   #if args.threads > 1: parallel_thread = ' --parallel='+str(args.threads)+' '
   #cmd1 = 'sort '+parallel_thread+' -k1,1 -T '+args.tempdir+'/'
-  cmd1 = 'sort -k1,1 -T '+args.tempdir+'/'
+  if args.threads > 1:
+    cmd1 = 'sort -k1,1 -T '+args.tempdir+'/ --parallel='+str(args.threads)
+  else:
+    cmd1 = 'sort -k1,1 -T '+args.tempdir+'/'
   cmd2 = 'gzip'
   global g_sortpipe
   global g_count

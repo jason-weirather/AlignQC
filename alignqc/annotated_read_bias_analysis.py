@@ -132,7 +132,10 @@ def do_locus(annots,refs,reads,args):
 
 def sort_ref(args):
   sys.stderr.write("Sorting in reference genePred\n")
-  cmd = 'sort -S2G -k3,3 -k5,5n -k6,6n'
+  if args.threads > 1:
+     cmd = 'sort -S2G -k3,3 -k5,5n -k6,6n --parallel='+str(args.threads)
+  else:
+     cmd = 'sort -S2G -k3,3 -k5,5n -k6,6n'
   of = open(args.tempdir+'/ref.sorted.gpd','w')
   p = Popen(cmd.split(),stdin=PIPE,stdout=of)
   refgpd = {}
@@ -155,7 +158,7 @@ def sort_ref(args):
 
 def sort_annot(args):
   sys.stderr.write("Sorting read annotations\n")
-  cmd = 'sort --parallel='+str(args.threads)+' -S2G -k1,1 -k2,2n -k3,3n'
+  cmd = 'sort -S2G -k1,1 -k2,2n -k3,3n'
   cmd2 = 'cut -f 4-'
   of0 = open(args.tempdir+'/annot.sorted.txt','w')
   p1 = Popen(cmd2.split(),stdin=PIPE,stdout=of0)

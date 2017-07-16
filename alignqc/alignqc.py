@@ -32,6 +32,5 @@ def do_inputs():
   args = parser.parse_args()
   return args
 
-
 if __name__=="__main__":
   main()

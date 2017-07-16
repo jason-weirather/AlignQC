@@ -2,7 +2,6 @@
 import argparse, os, inspect, sys
 from subprocess import Popen, PIPE
 from tempfile import mkdtemp, gettempdir
-from multiprocessing import cpu_count
 from shutil import rmtree
 from distutils.spawn import find_executable
 
@@ -99,7 +98,7 @@ def do_inputs():
   label2.add_argument('--output_folder',help="OUTPUT folder of all data")
 
   label3 = parser.add_argument_group(title="Performance parameters")
-  label3.add_argument('--threads',type=int,default=cpu_count(),help="INT number of threads to run. Default is system cpu count")
+  label3.add_argument('--threads',type=int,default=1,help="INT number of threads to run. Default is system cpu count")
 
   # Temporary working directory step 1 of 3 - Definition
   label4 = parser.add_argument_group(title="Temporary folder parameters")
@@ -156,10 +155,19 @@ def do_inputs():
      parser.error("Rscript is required and could not located in '"+args.rscript_path+"' its best if you just have it installed in your path by installing the base R program. Or you can specify its location with the --rscript_path option")
   ex = find_executable('sort')
   if not ex:
-     parser.error("sort as a command utility is required but could not be located.  Perhaps you are not using a linux operating system?")
+     parser.error("sort as a command utility is required but could not be located.  Perhaps you are not working in an environment with utilities in it")
+  ex = find_executable('zcat')
+  if not ex:
+     parser.error("zcat as a command utility is required but could not be located.  Perhaps you are not working in an environment with utilities in it")
+  ex = find_executable('gzip')
+  if not ex:
+     parser.error("gzip as a command utility is required but could not be located.  Perhaps you are not working in an environment with utilities in it")
   if os.name == 'nt' and args.threads > 1:
       args.threads = 1
       sys.stderr.write("WARNING: Windows OS detected. Operating in single thread mode. close_fds dependencies need resolved before multi-thread windows mode is enabled.\n")
+  if sys.platform == 'darwin' and args.threads > 1:
+      args.threads = 1
+      sys.stderr.write("WARNING: Mac OS detected. Operating in single thread mode. close_fds dependencies need resolved before multi-thread windows mode is enabled.\n")
   return args
 
 if __name__=='__main__':

@@ -628,13 +628,20 @@ def make_data_bam_annotation(args):
       tlog.write(cmd)
   tlog.stop()
 
+  if os.name == 'nt' or sys.platform == 'darwin': return 
   ## For the bias data we need to downsample
   ## Using some system utilities to accomplish this
   sys.stderr.write("downsampling mappings for bias calculation\n")
   cmd0 = 'zcat'
-  cmd1 = 'sort -R -S1G -T '+args.tempdir+'/temp'
+  if args.threads > 1:
+    cmd1 = 'sort -R -S1G -T '+args.tempdir+'/temp --parallel='+str(args.threads)
+  else:
+    cmd1 = 'sort -R -S1G -T '+args.tempdir+'/temp'
   cmd2 = 'head -n '+str(args.max_bias_data)
-  cmd3 = 'sort -k3,3 -k5,5n -k 6,6n -S1G -T '+args.tempdir+'/temp'
+  if args.threads > 1:
+    cmd3 = 'sort -k3,3 -k5,5n -k 6,6n -S1G -T '+args.tempdir+'/temp --parallel='+str(args.threads)
+  else:
+    cmd3 = 'sort -k3,3 -k5,5n -k 6,6n -S1G -T '+args.tempdir+'/temp'
   inf = open(args.tempdir+'/data/best.sorted.gpd.gz')
   of = gzip.open(args.tempdir+'/temp/best.random.sorted.gpd.gz','w')
   if os.name != 'nt':
@@ -671,7 +678,6 @@ def make_data_bam_annotation(args):
     if f[1] in rnames: of.write(line)
   inf.close()
   of.close()
-  if os.name == 'nt': return 
   tlog.start("use annotations to check for 5' to 3' biase")
   # 11. Use annotation outputs to check for  bias
   sys.stderr.write("Prepare bias data\n")
@@ -681,6 +687,7 @@ def make_data_bam_annotation(args):
         '-o '+args.tempdir+'/data/bias_table.txt.gz '+\
         '--output_counts '+args.tempdir+'/data/bias_counts.txt '+\
         '--allow_overflowed_matches '+\
+        '--threads '+str(args.threads)+" "+\
         '--specific_tempdir '+args.tempdir+'/temp'
   sys.stderr.write(cmd+"\n")
   annotated_read_bias_analysis.external_cmd(cmd)
