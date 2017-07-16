@@ -163,7 +163,7 @@ def process_locus(vals):
             if abs(v) < min_dist:
               min_dist = abs(v)
               num = v
-          if num:
+          if num is not None:
             out_start_distances.append(num)
         evend = [ex_end.end-x.payload.end for x in ends if x.overlaps(ex_end) and x.payload.distance(ex_end) <= args.window]
         if len(evend) > 0:
@@ -174,7 +174,7 @@ def process_locus(vals):
             if abs(v) < min_dist:
               min_dist = abs(v)
               num = v
-          if num:
+          if num is not None:
             out_end_distances.append(num)
     return [out_start_distances,out_end_distances]
 

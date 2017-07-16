@@ -563,14 +563,20 @@ def make_html(args):
     <div class="rhead">Bias in alignment to reference transcripts [<a download="bias.pdf" href="plots/bias.pdf">pdf</a>]</div>
     <table>
   '''
-      # still in conditional for annotation requirement
       of.write(ostr)
+      # still in conditional for annotation requirement
       of.write('<tr><td colspan="2">Evidence from:</td></tr>')
       of.write('<tr><td>Total Transcripts</td><td>'+str(addcommas(bias_tx_count))+'</td></tr>'+"\n")
       of.write('<tr><td>Total reads</td><td>'+str(addcommas(bias_read_count))+'</td></tr>'+"\n")
       ostr='''
     </table>
+      '''
+      of.write(ostr)
+      ostr='''
     <img src="plots/bias.png" alt="bias_png" />
+      '''
+      if bias_read_count > 0: of.write(ostr)
+      ostr='''
   </div>
       '''
       of.write(ostr)
