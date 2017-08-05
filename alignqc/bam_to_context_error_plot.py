@@ -74,11 +74,13 @@ def main(args):
   epf.write_context_error_report(args.tempdir+'/err.txt',strand)
 
   for ofile in args.output:
-    cmd = args.rscript_path+' '+os.path.dirname(os.path.realpath(__file__))+'/plot_base_error_context.r '+args.tempdir+'/err.txt '+ofile+' '
+    cmd = [args.rscript_path,
+           os.path.dirname(os.path.realpath(__file__))+'/plot_base_error_context.r',
+           args.tempdir+'/err.txt',ofile]
     if args.scale:
-      cmd += ' '.join([str(x) for x in args.scale])
-    sys.stderr.write(cmd+"\n")
-    call(cmd.split())
+      cmd += [str(x) for x in args.scale]
+    sys.stderr.write(" ".join(cmd)+"\n")
+    call(cmd)
   sys.stderr.write("finished\n")
   if args.output_raw:
     of = open(args.output_raw,'w')

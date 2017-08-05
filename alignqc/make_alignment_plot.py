@@ -11,9 +11,10 @@ def main(args):
 
   sys.stderr.write("making plot\n")
   for ofile in args.output:
-    cmd = args.rscript_path+' '+udir +'/plot_gapped_alignment_statistics.r '+args.input +' '+ofile
-    sys.stderr.write(cmd+"\n")
-    call(cmd.split())
+    cmd = [args.rscript_path,udir+'/plot_gapped_alignment_statistics.r',
+           args.input,ofile]
+    sys.stderr.write(" ".join(cmd)+"\n")
+    call(cmd)
 
   if args.output_stats:
     do_stats(args)
