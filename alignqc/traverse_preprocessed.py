@@ -358,7 +358,7 @@ def setup_tempdir(args):
 def external_cmd(cmd):
   #need to save arguments
   cache_argv = sys.argv
-  sys.argv = cmd.split()
+  sys.argv = cmd
   args = do_inputs()
   main(args)
   #need to set the arguments back to what they were

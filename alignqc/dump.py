@@ -118,7 +118,7 @@ def external_cmd(cmd,version=None):
   g_version = version
 
   cache_argv = sys.argv
-  sys.argv = cmd.split()
+  sys.argv = cmd
   args = do_inputs()
   main(args)
   sys.argv = cache_argv

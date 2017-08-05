@@ -133,11 +133,12 @@ def do_locus(annots,refs,reads,args):
 def sort_ref(args):
   sys.stderr.write("Sorting in reference genePred\n")
   if args.threads > 1:
-     cmd = 'sort -S2G -k3,3 -k5,5n -k6,6n --parallel='+str(args.threads)
+     cmd = ['sort','-S2G','-k3,3','-k5,5n','-k6,6n',
+            '--parallel='+str(args.threads)]
   else:
-     cmd = 'sort -S2G -k3,3 -k5,5n -k6,6n'
+     cmd = ['sort','-S2G','-k3,3','-k5,5n','-k6,6n']
   of = open(args.tempdir+'/ref.sorted.gpd','w')
-  p = Popen(cmd.split(),stdin=PIPE,stdout=of)
+  p = Popen(cmd,stdin=PIPE,stdout=of)
   refgpd = {}
   if args.ref_genepred[-3:] == '.gz':
      inf = gzip.open(args.ref_genepred)
@@ -158,11 +159,11 @@ def sort_ref(args):
 
 def sort_annot(args):
   sys.stderr.write("Sorting read annotations\n")
-  cmd = 'sort -S2G -k1,1 -k2,2n -k3,3n'
+  cmd = ['sort','-S2G','-k1,1','-k2,2n','-k3,3n']
   cmd2 = 'cut -f 4-'
   of0 = open(args.tempdir+'/annot.sorted.txt','w')
   p1 = Popen(cmd2.split(),stdin=PIPE,stdout=of0)
-  p0 = Popen(cmd.split(),stdin=PIPE,stdout=p1.stdin)
+  p0 = Popen(cmd,stdin=PIPE,stdout=p1.stdin)
   inf = None
   if is_gzip(args.annotations):
     inf = gzip.open(args.annotations)
@@ -328,7 +329,7 @@ def setup_tempdir(args):
 
 def external_cmd(cmd):
   cache_argv = sys.argv
-  sys.argv = cmd.split()
+  sys.argv = cmd
   args = do_inputs()
   main(args)
   sys.argv = cache_argv

@@ -68,7 +68,7 @@ def main(args):
   bind_path = args.input+'.bgi'
   if not os.path.isfile(bind_path):
     bind_path = args.tempdir+'/myindex.bgi'
-    cmd = "bam_bgzf_index.py "+args.input+" -o "+bind_path+" --threads "+str(args.threads)
+    cmd = ["bam_bgzf_index.py",args.input,"-o",bind_path,"--threads",str(args.threads)]
     bam_bgzf_index.external_cmd(cmd)
     #call(cmd.split())
 
@@ -76,9 +76,10 @@ def main(args):
   #if args.threads > 1: parallel_thread = ' --parallel='+str(args.threads)+' '
   #cmd1 = 'sort '+parallel_thread+' -k1,1 -T '+args.tempdir+'/'
   if args.threads > 1:
-    cmd1 = 'sort -k1,1 -T '+args.tempdir+'/ --parallel='+str(args.threads)
+    cmd1 = ['sort','-k1,1','-T',args.tempdir+'/',
+            '--parallel='+str(args.threads)]
   else:
-    cmd1 = 'sort -k1,1 -T '+args.tempdir+'/'
+    cmd1 = ['sort','-k1,1','-T',args.tempdir+'/']
   cmd2 = 'gzip'
   global g_sortpipe
   global g_count
@@ -86,7 +87,7 @@ def main(args):
   of = open(args.output,'wb')
   if os.name != 'nt':
      gzippipe = Popen(cmd2.split(),stdout=of,stdin=PIPE,close_fds=True)
-     g_sortpipe = Popen(cmd1.split(),stdout=gzippipe.stdin,stdin=PIPE,close_fds=True)
+     g_sortpipe = Popen(cmd1,stdout=gzippipe.stdin,stdin=PIPE,close_fds=True)
   else:
      sys.stderr.write("WARNING: Windows OS detected. operating in single thread mode.\n")
      if args.threads > 1: raise ValueError('Error. --threads must be 1 for windows operation')
@@ -162,7 +163,7 @@ def setup_tempdir(args):
 def external_cmd(cmd):
   #need to save arguments
   cache_argv = sys.argv
-  sys.argv = cmd.split()
+  sys.argv = cmd
   args = do_inputs()
   main(args)
   #need to set the arguments back to what they were

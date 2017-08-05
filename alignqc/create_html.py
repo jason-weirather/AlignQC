@@ -20,16 +20,15 @@ def main(args):
 
   udir = os.path.dirname(os.path.realpath(__file__))
   # Make the portable output
-  cmd = udir+'/make_solo_html.py '+args.tempdir+'/report.xhtml '
-  cmd += '-o '+args.tempdir+'/portable_report.xhtml'
-  sys.stderr.write(cmd+"\n")
+  cmd = [udir+'/make_solo_html.py',args.tempdir+'/report.xhtml',
+         '-o',args.tempdir+'/portable_report.xhtml']
+  sys.stderr.write(" ".join(cmd)+"\n")
   make_solo_html.external_cmd(cmd)
 
   # Make the full output
-  cmd = udir+'/make_solo_html.py '+args.tempdir+'/report.xhtml '
-  cmd += '-o '+args.tempdir+'/output_report.xhtml'
-  cmd += ' --all'
-  sys.stderr.write(cmd+"\n")
+  cmd = [udir+'/make_solo_html.py',args.tempdir+'/report.xhtml',
+         '-o',args.tempdir+'/output_report.xhtml','--all']
+  sys.stderr.write(" ".join(cmd)+"\n")
   make_solo_html.external_cmd(cmd)
 
 
@@ -510,13 +509,14 @@ def make_html(args):
 
   ### For Coverage we can do part of it without annotations
   ostr = '''
-<div class="subject_title">Coverage analysis &#xA0;&#xA0;&#xA0;&#xA0;<span class="highlight">'''
+<div class="result_block">
+  <div class="subject_title">Coverage analysis &#xA0;&#xA0;&#xA0;&#xA0;
+    <span class="highlight">'''
   of.write(ostr+"\n")
   of.write(perc(coverage_data['genome_covered'],coverage_data['genome_total'],2)+"\n")
   ostr = '''
-  </span> <span class="highlight2">reference sequences covered</span>
-</div>
-<div class="result_block">
+    </span><span class="highlight2">reference sequences covered</span>
+  </div>
   <div class="one_half left">
     <div class="rhead">Coverage of reference sequences [<a download="covgraph.pdf" href="plots/covgraph.pdf">pdf</a>]</div>
     <img src="plots/covgraph.png" alt="covgraph_png" />
@@ -586,7 +586,7 @@ def make_html(args):
       # still in annotations check
       of.write(ostr)
       # done with annotations check
-    ostr = '''
+  ostr = '''
 </div>
 <hr />
 '''

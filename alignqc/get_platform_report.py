@@ -108,7 +108,7 @@ def do_args():
 
 def external_cmd(cmd):
   cache_argv = sys.argv
-  sys.argv = cmd.split()
+  sys.argv = cmd
   args = do_args()
   main(args)
   sys.argv = cache_argv

@@ -16,11 +16,11 @@ def main():
   #do our inputs
   args = do_inputs()
   if args.mode == 'analyze':
-    analyze.external_cmd(" ".join(operable_argv),version=version)
+    analyze.external_cmd(operable_argv,version=version)
   elif args.mode == 'dump':
-    dump.external_cmd(" ".join(operable_argv),version=version)
+    dump.external_cmd(operable_argv,version=version)
   elif args.mode == 'compare':
-    compare.external_cmd(" ".join(operable_argv),version=version)
+    compare.external_cmd(operable_argv,version=version)
   else:
     sys.stderr.write("Run mode not yet implemented\n")
 

@@ -22,7 +22,7 @@ def main(args):
   for infile in args.xhtml_inputs:
     z += 1
     outfile = args.tempdir+'/'+str(z)+'.list'
-    cmd = 'dump.py '+infile+' -l -o '+outfile
+    cmd = ['dump.py',infile,'-l','-o',outfile]
     dump.external_cmd(cmd)
     res = {'fname':infile,'xlist':set(),'index':z}
     with open(outfile) as inf:
@@ -40,7 +40,7 @@ def main(args):
     sys.stderr.write("  Extracting for "+str(file['fname'])+" "+str(file['index'])+"\n")
     if 'alignment_stats.txt' in file['xlist']:
       ofile = args.tempdir+'/'+str(file['index'])+'.alignment_stats.txt'
-      cmd = 'dump.py '+file['fname']+' -e alignment_stats.txt -o '+ofile
+      cmd = ['dump.py',file['fname'],'-e','alignment_stats.txt','-o',ofile]
       dump.external_cmd(cmd)
       file['alignment_stats'] = {}
       with open(ofile) as inf:
@@ -49,7 +49,7 @@ def main(args):
           file['alignment_stats'][f[0]] = int(f[1])
     if 'error_stats.txt' in file['xlist']:
       ofile = args.tempdir+'/'+str(file['index'])+'.error_stats.txt'
-      cmd = 'dump.py '+file['fname']+' -e error_stats.txt -o '+ofile
+      cmd = ['dump.py',file['fname'],'-e','error_stats.txt','-o',ofile]
       dump.external_cmd(cmd)
       file['error_stats'] = {}
       with open(ofile) as inf:
@@ -58,7 +58,7 @@ def main(args):
           file['error_stats'][f[0]] = f[1]
     if 'lengths.txt.gz' in file['xlist']:
       ofile = args.tempdir+'/'+str(file['index'])+'.lengths.txt.gz'
-      cmd = 'dump.py '+file['fname']+' -e lengths.txt.gz -o '+ofile
+      cmd = ['dump.py',file['fname'],'-e','lengths.txt.gz','-o',ofile]
       dump.external_cmd(cmd)
       file['lengths'] = {'average':'','median':'','N50':'','stddev':'','average_aligned':'','median_aligned':'','N50_aligned':'','stddev_aligned':''}
       inf = gzip.open(ofile)
@@ -181,7 +181,7 @@ def external_cmd(cmd,version=None):
   g_version = version
 
   cache_argv = sys.argv
-  sys.argv = cmd.split()
+  sys.argv = cmd
   args = do_inputs()
   main(args)
   sys.argv = cache_argv

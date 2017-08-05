@@ -129,7 +129,7 @@ def setup_tempdir(args):
 
 def external_cmd(cmd):
   cache_argv = sys.argv
-  sys.argv = cmd.split()
+  sys.argv = cmd
   #do our inputs
   args = do_inputs()
   main(args)

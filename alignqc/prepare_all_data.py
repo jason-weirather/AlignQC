@@ -96,57 +96,58 @@ def make_data_bam(args):
   tlog.start("traverse bam and preprocess")
   # 1. Traverse bam and store alignment mappings ordered by query name
   udir = os.path.dirname(os.path.realpath(__file__))
-  cmd =  udir+'/bam_preprocess.py '+args.input+' --minimum_intron_size '+str(args.min_intron_size)
-  cmd += ' -o '+args.tempdir+'/temp/alndata.txt.gz --threads '+str(args.threads)
-  cmd += ' --specific_tempdir '+args.tempdir+'/temp/'
+  cmd =  [udir+'/bam_preprocess.py',args.input,'--minimum_intron_size',
+          str(args.min_intron_size),'-o',args.tempdir+'/temp/alndata.txt.gz',
+          '--threads',str(args.threads),'--specific_tempdir',
+          args.tempdir+'/temp/']
   sys.stderr.write("Creating initial alignment mapping data\n")
-  sys.stderr.write(cmd+"\n")
+  sys.stderr.write(" ".join(cmd)+"\n")
   bam_preprocess.external_cmd(cmd)
-  tlog.write(cmd)
+  tlog.write(" ".join(cmd))
   tlog.stop()
   tlog.start("traverse preprocessed")
   # 2. Describe the alignments by traversing the previously made file
-  cmd = udir+'/traverse_preprocessed.py '+args.tempdir+'/temp/alndata.txt.gz'
-  cmd += ' -o '+args.tempdir+'/data/'
-  cmd += ' --specific_tempdir '+args.tempdir+'/temp/'
-  cmd += ' --threads '+str(args.threads)
-  cmd += ' --threads '+str(args.threads)+' '
+  cmd = [udir+'/traverse_preprocessed.py',args.tempdir+'/temp/alndata.txt.gz',
+         '-o',args.tempdir+'/data/','--specific_tempdir',args.tempdir+'/temp/',
+         '--threads',str(args.threads)]
   if args.min_aligned_bases:
-    cmd += ' --min_aligned_bases '+str(args.min_aligned_bases)
+    cmd += ['--min_aligned_bases',str(args.min_aligned_bases)]
   if args.max_query_overlap:
-    cmd += ' --max_query_overlap '+str(args.max_query_overlap)
+    cmd += ['--max_query_overlap',str(args.max_query_overlap)]
   if args.max_target_overlap:
-    cmd += ' --max_target_overlap '+str(args.max_target_overlap)
+    cmd += ['--max_target_overlap',str(args.max_target_overlap)]
   if args.max_query_gap:
-    cmd += ' --max_query_gap '+str(args.max_query_gap)
+    cmd += ['--max_query_gap',str(args.max_query_gap)]
   if args.max_target_gap:
-    cmd += ' --max_target_gap '+str(args.max_target_gap)
+    cmd += ['--max_target_gap',str(args.max_target_gap)]
   if args.required_fractional_improvement:
-    cmd += ' --required_fractional_improvement '+str(args.required_fractional_improvement)
+    cmd += ['--required_fractional_improvement',
+            str(args.required_fractional_improvement)]
   sys.stderr.write("Traverse bam for alignment analysis\n")
-  sys.stderr.write(cmd+"\n")
+  sys.stderr.write(" ".join(cmd)+"\n")
   traverse_preprocessed.external_cmd(cmd)
-  tlog.write(cmd)
+  tlog.write(" ".join(cmd))
   tlog.stop()
 
   tlog.start("get chromosome lengths from bam")
   # 3. get chromosome lengths from bam
-  cmd = udir+'/bam_to_chr_lengths.py '+args.input+' -o '+args.tempdir+'/data/chrlens.txt'
+  cmd = [udir+'/bam_to_chr_lengths.py',args.input,
+         '-o',args.tempdir+'/data/chrlens.txt']
   sys.stderr.write("Writing chromosome lengths from header\n")
-  sys.stderr.write(cmd+"\n")
+  sys.stderr.write(" ".join(cmd)+"\n")
   bam_to_chr_lengths.external_cmd(cmd)
-  tlog.write(cmd)
+  tlog.write(" ".join(cmd))
   tlog.stop()
 
   tlog.start("look for platform specific read names")
   # Now we can find any known reads
   # 4. Go through read names to find if there are platform-specific read names present
   sys.stderr.write("Can we find any known read types\n")
-  cmd = udir+'/get_platform_report.py '+args.tempdir+'/data/lengths.txt.gz '
-  cmd += args.tempdir+'/data/special_report'
-  sys.stderr.write(cmd+"\n")
+  cmd = [udir+'/get_platform_report.py',args.tempdir+'/data/lengths.txt.gz',
+         args.tempdir+'/data/special_report']
+  sys.stderr.write(" ".join(cmd)+"\n")
   get_platform_report.external_cmd(cmd)
-  tlog.write(cmd)
+  tlog.write(" ".join(cmd))
   tlog.stop()
 
   tlog.start("check for pacbio in case we make a special graph")
@@ -159,29 +160,36 @@ def make_data_bam(args):
         do_pb = True
         break
   if do_pb:
-    cmd = args.rscript_path+' '+udir+'/plot_pacbio.r '+args.tempdir+'/data/special_report.pacbio '+args.tempdir+'/plots/pacbio.png'
-    sys.stderr.write(cmd+"\n")
+    cmd = [args.rscript_path,udir+'/plot_pacbio.r',
+           args.tempdir+'/data/special_report.pacbio',
+           args.tempdir+'/plots/pacbio.png']
+    sys.stderr.write(" ".join(cmd)+"\n")
     mycall(cmd,args.tempdir+'/logs/special_report_pacbio_png')
-    cmd = args.rscript_path+' '+udir+'/plot_pacbio.r '+args.tempdir+'/data/special_report.pacbio '+args.tempdir+'/plots/pacbio.pdf'
-    sys.stderr.write(cmd+"\n")
+    cmd = [args.rscript_path,udir+'/plot_pacbio.r',
+           args.tempdir+'/data/special_report.pacbio',
+           args.tempdir+'/plots/pacbio.pdf']
+    sys.stderr.write(" ".join(cmd)+"\n")
     mycall(cmd,args.tempdir+'/logs/special_report_pacbio_pdf')
-  tlog.write(cmd)
+  tlog.write(" ".join(cmd))
   tlog.stop()
 
   tlog.start("get a depth for our best alignments")
   # 5. Go through the genepred file and get a depth bed for our best alignments
   sys.stderr.write("Go through genepred best alignments and make a bed depth file\n")
-  cmd = "gpd_to_bed_depth.py "+args.tempdir+'/data/best.sorted.gpd.gz -o '+args.tempdir+'/data/depth.sorted.bed.gz'
-  cmd += " --threads "+str(args.threads)
+  cmd = ["gpd_to_bed_depth.py",args.tempdir+'/data/best.sorted.gpd.gz',
+         '-o',args.tempdir+'/data/depth.sorted.bed.gz',"--threads",
+         str(args.threads)]
   sys.stderr.write("Generate the depth bed for the mapped reads\n")
-  sys.stderr.write(cmd+"\n")
+  sys.stderr.write(" ".join(cmd)+"\n")
   gpd_to_bed_depth(cmd)
 
   sys.stderr.write("Stratify the depth to make it plot quicker and cleaner\n")
-  cmd = "bed_depth_to_stratified_coverage.py "+args.tempdir+'/data/depth.sorted.bed.gz'
-  cmd += ' -l '+args.tempdir+"/data/chrlens.txt -o "+args.tempdir+'/temp/depth.coverage-strata.sorted.bed.gz'
-  cmd += ' --output_key '+args.tempdir+'/temp/coverage-strata.key'
-  cmd += ' --minimum_coverage 100000'
+  cmd = ["bed_depth_to_stratified_coverage.py",
+         args.tempdir+'/data/depth.sorted.bed.gz','-l',
+         args.tempdir+"/data/chrlens.txt",
+         '-o',args.tempdir+'/temp/depth.coverage-strata.sorted.bed.gz',
+         '--output_key',args.tempdir+'/temp/coverage-strata.key',
+         '--minimum_coverage','100000']
   bed_depth_to_stratified_coverage(cmd)
 
   global rcnt #read count
@@ -189,7 +197,7 @@ def make_data_bam(args):
   tinf = gzip.open(args.tempdir+'/data/lengths.txt.gz')
   for line in tinf:  rcnt += 1
   tinf.close()
-  tlog.write(cmd)
+  tlog.write(" ".join(cmd))
   tlog.stop()
 
   # For now reporting loci will be optional until it can be tested and optimized.
@@ -197,155 +205,173 @@ def make_data_bam(args):
     tlog.start("do locus search")
     # 6. Go through the best alignments and look for loci
     sys.stderr.write("Approximate loci and mapped read distributions among them.\n")
-    cmd = udir+"/gpd_loci_analysis.py "+args.tempdir+'/data/best.sorted.gpd.gz -o '+args.tempdir+'/data/loci-all.bed.gz --output_loci '+args.tempdir+'/data/loci.bed.gz'
-    cmd += ' --downsample '+str(args.locus_downsample)+' '
-    cmd += ' --threads '+str(args.threads)+' '
+    cmd = [udir+"/gpd_loci_analysis.py",
+           args.tempdir+'/data/best.sorted.gpd.gz','-o',
+           args.tempdir+'/data/loci-all.bed.gz','--output_loci',
+           args.tempdir+'/data/loci.bed.gz','--downsample',
+           str(args.locus_downsample),'--threads',str(args.threads)]
     if args.min_depth:
-      cmd += ' --min_depth '+str(args.min_depth)
+      cmd += ['--min_depth',str(args.min_depth)]
     if args.min_depth:
-      cmd += ' --min_coverage_at_depth '+str(args.min_coverage_at_depth)
+      cmd += ['--min_coverage_at_depth',str(args.min_coverage_at_depth)]
     if args.min_exon_count:
-      cmd += ' --min_exon_count '+str(args.min_exon_count)
-    sys.stderr.write(cmd+"\n")
+      cmd += ['--min_exon_count',str(args.min_exon_count)]
+    sys.stderr.write(" ".join(cmd)+"\n")
     gpd_loci_analysis.external_cmd(cmd)
 
-    cmd = udir+"/locus_bed_to_rarefraction.py "+args.tempdir+'/data/loci.bed.gz -o '+args.tempdir+'/data/locus_rarefraction.txt'
-    cmd += ' --threads '+str(args.threads)+' '
-    cmd += ' --original_read_count '+str(rcnt)+' '
+    cmd = [udir+"/locus_bed_to_rarefraction.py",
+           args.tempdir+'/data/loci.bed.gz','-o',
+           args.tempdir+'/data/locus_rarefraction.txt','--threads',
+           str(args.threads),'--original_read_count',str(rcnt)]
     sys.stderr.write("Make rarefraction curve\n")
-    sys.stderr.write(cmd+"\n")
+    sys.stderr.write(" ".join(cmd)+"\n")
     locus_bed_to_rarefraction.external_cmd(cmd)
 
     sys.stderr.write("Make locus rarefraction plot\n")
     for ext in ['png','pdf']:
-      cmd = args.rscript_path+' '+udir+'/plot_annotation_rarefractions.r '+\
-               args.tempdir+'/plots/locus_rarefraction.'+ext+' '+\
-               'locus'+' '+\
-               args.tempdir+'/data/locus_rarefraction.txt '+\
-               '#FF000088 '
-      sys.stderr.write(cmd+"\n")
+      cmd = [args.rscript_path,udir+'/plot_annotation_rarefractions.r',
+             args.tempdir+'/plots/locus_rarefraction.'+ext,'locus',
+             args.tempdir+'/data/locus_rarefraction.txt','#FF000088']
+      sys.stderr.write(" ".join(cmd)+"\n")
       mycall(cmd,args.tempdir+'/logs/plot_locus_rarefraction_'+ext)
-    tlog.write(cmd)
+    tlog.write(" ".join(cmd))
     tlog.stop()
 
   tlog.start("get ready for alignment plot")
   # 7. Alignment plot preparation
   sys.stderr.write("Get ready for alignment plot\n")
-  cmd = udir+'/make_alignment_plot.py '+args.tempdir+'/data/lengths.txt.gz '
-  cmd += ' --rscript_path '+args.rscript_path+' '
-  cmd += ' --output_stats '+args.tempdir+'/data/alignment_stats.txt '
-  cmd += ' --output '+args.tempdir+'/plots/alignments.png '
-  cmd += args.tempdir+'/plots/alignments.pdf'
+  cmd = [udir+'/make_alignment_plot.py',args.tempdir+'/data/lengths.txt.gz',
+         '--rscript_path',args.rscript_path,'--output_stats',
+         args.tempdir+'/data/alignment_stats.txt','--output',
+         args.tempdir+'/plots/alignments.png',
+         args.tempdir+'/plots/alignments.pdf']
   sys.stderr.write("Make alignment plots\n")
-  sys.stderr.write(cmd+"\n")
+  sys.stderr.write(" ".join(cmd)+"\n")
   make_alignment_plot.external_cmd(cmd)
-  tlog.write(cmd)
+  tlog.write(" ".join(cmd))
   tlog.stop()
 
   tlog.start("make depth reports")
   # 8. Make depth reports
   sys.stderr.write("Making depth reports\n")
-  cmd = udir+'/depth_to_coverage_report.py '+args.tempdir+'/data/depth.sorted.bed.gz '+args.tempdir+'/data/chrlens.txt -o '+args.tempdir+'/data'
-  sys.stderr.write(cmd+"\n")
+  cmd = [udir+'/depth_to_coverage_report.py',
+         args.tempdir+'/data/depth.sorted.bed.gz',
+         args.tempdir+'/data/chrlens.txt','-o',args.tempdir+'/data']
+  sys.stderr.write(" ".join(cmd)+"\n")
   depth_to_coverage_report.external_cmd(cmd)
-  tlog.write(cmd)
+  tlog.write(" ".join(cmd))
   tlog.stop()
 
   tlog.start("make coverage plots")
   # do the depth graphs
   sys.stderr.write("Making coverage plots\n")
-  cmd = args.rscript_path+' '+udir+'/plot_chr_depth.r  '+args.tempdir+'/data/line_plot_table.txt.gz '+args.tempdir+'/data/total_distro_table.txt.gz '+args.tempdir+'/data/chr_distro_table.txt.gz '+args.tempdir+'/plots/covgraph.png'
-  sys.stderr.write(cmd+"\n")
+  cmd = [args.rscript_path,udir+'/plot_chr_depth.r',
+         args.tempdir+'/data/line_plot_table.txt.gz',
+         args.tempdir+'/data/total_distro_table.txt.gz',
+         args.tempdir+'/data/chr_distro_table.txt.gz',
+         args.tempdir+'/plots/covgraph.png']
+  sys.stderr.write(" ".join(cmd)+"\n")
   mycall(cmd,args.tempdir+'/logs/covgraph_png')
-  cmd = args.rscript_path+' '+udir+'/plot_chr_depth.r  '+args.tempdir+'/data/line_plot_table.txt.gz '+args.tempdir+'/data/total_distro_table.txt.gz '+args.tempdir+'/data/chr_distro_table.txt.gz '+args.tempdir+'/plots/covgraph.pdf'
-  sys.stderr.write(cmd+"\n")
+  cmd = [args.rscript_path,udir+'/plot_chr_depth.r',
+         args.tempdir+'/data/line_plot_table.txt.gz',
+         args.tempdir+'/data/total_distro_table.txt.gz',
+         args.tempdir+'/data/chr_distro_table.txt.gz',
+         args.tempdir+'/plots/covgraph.pdf']
+  sys.stderr.write(" ".join(cmd)+"\n")
   mycall(cmd,args.tempdir+'/logs/covgraph_pdf')
-  tlog.write(cmd)
+  tlog.write(" ".join(cmd))
   tlog.stop()
 
   tlog.start("make chr depth plots")
   # do depth plots
   sys.stderr.write("Making chr depth plots\n")
-  cmd = args.rscript_path+' '+udir+'/plot_depthmap.r '+args.tempdir+'/temp/depth.coverage-strata.sorted.bed.gz '+args.tempdir+'/data/chrlens.txt '+args.tempdir+'/temp/coverage-strata.key '+args.tempdir+'/plots/perchrdepth.png'
-  sys.stderr.write(cmd+"\n")
+  cmd = [args.rscript_path,udir+'/plot_depthmap.r',
+         args.tempdir+'/temp/depth.coverage-strata.sorted.bed.gz',
+         args.tempdir+'/data/chrlens.txt',
+         args.tempdir+'/temp/coverage-strata.key',
+         args.tempdir+'/plots/perchrdepth.png']
+  sys.stderr.write(" ".join(cmd)+"\n")
   mycall(cmd,args.tempdir+'/logs/perchr_depth_png')
-  cmd = args.rscript_path+' '+udir+'/plot_depthmap.r '+args.tempdir+'/temp/depth.coverage-strata.sorted.bed.gz '+args.tempdir+'/data/chrlens.txt '+args.tempdir+'/temp/coverage-strata.key '+args.tempdir+'/plots/perchrdepth.pdf'
-  sys.stderr.write(cmd+"\n")
+  cmd = [args.rscript_path,udir+'/plot_depthmap.r',
+         args.tempdir+'/temp/depth.coverage-strata.sorted.bed.gz',
+         args.tempdir+'/data/chrlens.txt',
+         args.tempdir+'/temp/coverage-strata.key',
+         args.tempdir+'/plots/perchrdepth.pdf']
+  sys.stderr.write(" ".join(cmd)+"\n")
   mycall(cmd,args.tempdir+'/logs/perchr_depth_pdf')
-  tlog.write(cmd)
+  tlog.write(" ".join(cmd))
   tlog.stop()
 
   tlog.start("get the exon size distribution")
   #Get the exon distribution
   sys.stderr.write("Get the exon distributions\n")
-  cmd = udir+'/gpd_to_exon_distro.py '
-  cmd += args.tempdir+'/data/best.sorted.gpd.gz -o '
-  cmd += args.tempdir+'/data/exon_size_distro.txt.gz'
-  cmd += ' --threads '+str(args.threads)
-  sys.stderr.write(cmd+"\n")
+  cmd = [udir+'/gpd_to_exon_distro.py',args.tempdir+'/data/best.sorted.gpd.gz',
+         '-o',args.tempdir+'/data/exon_size_distro.txt.gz','--threads',
+         str(args.threads)]
+  sys.stderr.write(" ".join(cmd)+"\n")
   gpd_to_exon_distro.external_cmd(cmd)
-  tlog.write(cmd)
+  tlog.write(" ".join(cmd))
   tlog.stop()
 
   tlog.start("plot exon distro")
-  cmd = args.rscript_path+' '+udir+'/plot_exon_distro.r '+args.tempdir+'/data/exon_size_distro.txt.gz '+args.tempdir+'/plots/exon_size_distro.png'
-  sys.stderr.write(cmd+"\n")
+  cmd = [args.rscript_path,udir+'/plot_exon_distro.r',
+         args.tempdir+'/data/exon_size_distro.txt.gz',
+         args.tempdir+'/plots/exon_size_distro.png']
+  sys.stderr.write(" ".join(cmd)+"\n")
   mycall(cmd,args.tempdir+'/logs/exon_size_distro_png')
-  cmd = args.rscript_path+' '+udir+'/plot_exon_distro.r '+args.tempdir+'/data/exon_size_distro.txt.gz '+args.tempdir+'/plots/exon_size_distro.pdf'
-  sys.stderr.write(cmd+"\n")
+  cmd = [args.rscript_path,udir+'/plot_exon_distro.r',
+         args.tempdir+'/data/exon_size_distro.txt.gz',
+         args.tempdir+'/plots/exon_size_distro.pdf']
+  sys.stderr.write(" ".join(cmd)+"\n")
   mycall(cmd,args.tempdir+'/logs/exon_size_distro_pdf')
-  tlog.write(cmd)
+  tlog.write(" ".join(cmd))
   tlog.stop()
 
   tlog.start("make bed file")
   # Make a UCSC compatible bed file
   sys.stderr.write("Make a UCSC genome browser compatible bed file\n")
-  cmd = 'gpd_to_UCSC_bed12.py --headername '+args.input+':best '
-  cmd += ' '+args.tempdir+'/data/best.sorted.gpd.gz'
-  cmd += ' -o '+args.tempdir+'/data/best.sorted.bed.gz'
-  cmd += ' --color red'
-  sys.stderr.write(cmd+"\n")
+  cmd = ['gpd_to_UCSC_bed12.py','--headername',args.input+':best',
+         args.tempdir+'/data/best.sorted.gpd.gz','-o',
+         args.tempdir+'/data/best.sorted.bed.gz','--color','red']
+  sys.stderr.write(" ".join(cmd)+"\n")
   gpd_to_UCSC_bed12(cmd)
-  tlog.write(cmd)
+  tlog.write(" ".join(cmd))
   tlog.stop()
 
   tlog.start("make bed file")
-  cmd = 'gpd_to_UCSC_bed12.py --headername '+args.input+':trans-chimera '
-  cmd += ' '+args.tempdir+'/data/chimera.gpd.gz'
-  cmd += ' -o '+args.tempdir+'/data/chimera.bed.gz'
-  cmd += ' --color blue'
-  sys.stderr.write(cmd+"\n")
+  cmd = ['gpd_to_UCSC_bed12.py','--headername',args.input+':trans-chimera',
+        args.tempdir+'/data/chimera.gpd.gz','-o',
+        args.tempdir+'/data/chimera.bed.gz','--color','blue']
+  sys.stderr.write(" ".join(cmd)+"\n")
   gpd_to_UCSC_bed12(cmd)
-  tlog.write(cmd)
+  tlog.write(" ".join(cmd))
   tlog.stop()
 
   tlog.start("make bed file")
-  cmd = 'gpd_to_UCSC_bed12.py --headername '+args.input+':gapped '
-  cmd += ' '+args.tempdir+'/data/gapped.gpd.gz'
-  cmd += ' -o '+args.tempdir+'/data/gapped.bed.gz'
-  cmd += ' --color orange'
-  sys.stderr.write(cmd+"\n")
+  cmd = ['gpd_to_UCSC_bed12.py','--headername',args.input+':gapped',
+         args.tempdir+'/data/gapped.gpd.gz','-o',
+         args.tempdir+'/data/gapped.bed.gz','--color','orange']
+  sys.stderr.write(" ".join(cmd)+"\n")
   gpd_to_UCSC_bed12(cmd)
-  tlog.write(cmd)
+  tlog.write(" ".join(cmd))
   tlog.stop()
 
-  cmd = 'gpd_to_UCSC_bed12.py --headername '+args.input+':self-chimera '
-  cmd += ' '+args.tempdir+'/data/technical_chimeras.gpd.gz'
-  cmd += ' -o '+args.tempdir+'/data/technical_chimeras.bed.gz'
-  cmd += ' --color green'
-  sys.stderr.write(cmd+"\n")
+  cmd = ['gpd_to_UCSC_bed12.py','--headername',args.input+':self-chimera',
+         args.tempdir+'/data/technical_chimeras.gpd.gz','-o',
+         args.tempdir+'/data/technical_chimeras.bed.gz','--color','green']
+  sys.stderr.write(" ".join(cmd)+"\n")
   gpd_to_UCSC_bed12(cmd)
-  tlog.write(cmd)
+  tlog.write(" ".join(cmd))
   tlog.stop()
 
   tlog.start("make bed file")
-  cmd = 'gpd_to_UCSC_bed12.py --headername '+args.input+':self-atypical '
-  cmd += ' '+args.tempdir+'/data/technical_atypical_chimeras.gpd.gz'
-  cmd += ' -o '+args.tempdir+'/data/technical_atypical_chimeras.bed.gz'
-  cmd += ' --color purple'
-  sys.stderr.write(cmd+"\n")
+  cmd = ['gpd_to_UCSC_bed12.py','--headername',args.input+':self-atypical',
+         args.tempdir+'/data/technical_atypical_chimeras.gpd.gz','-o',
+         args.tempdir+'/data/technical_atypical_chimeras.bed.gz','--color',
+         'purple']
+  sys.stderr.write(" ".join(cmd)+"\n")
   gpd_to_UCSC_bed12(cmd)
-  tlog.write(cmd)
+  tlog.write(" ".join(cmd))
   tlog.stop()
 
 def make_data_bam_reference(args):
@@ -361,40 +387,46 @@ def make_data_bam_reference(args):
 
   tlog.start("Get context error")
   # 1. Context error
-  cmd = udir+'/bam_to_context_error_plot.py '+args.input+' -r '+args.reference+' --target --output_raw '+args.tempdir+'/data/context_error_data.txt -o '+args.tempdir+'/plots/context_plot.png '+args.tempdir+'/plots/context_plot.pdf'
-  cmd += ' --rscript_path '+args.rscript_path+' '
-  cmd += ' --random '
-  cmd += ' --specific_tempdir '+args.tempdir+'/temp '
+  cmd = [udir+'/bam_to_context_error_plot.py',args.input,'-r',args.reference,
+         '--target','--output_raw',args.tempdir+'/data/context_error_data.txt',
+         '-o',args.tempdir+'/plots/context_plot.png',
+         args.tempdir+'/plots/context_plot.pdf','--rscript_path',
+         args.rscript_path,'--random','--specific_tempdir',
+         args.tempdir+'/temp']
   if args.context_error_scale:
-    cmd += ' --scale '+' '.join([str(x) for x in args.context_error_scale])
+    cmd += ['--scale']+[str(x) for x in args.context_error_scale]
   if args.context_error_stopping_point:
-    cmd += ' --stopping_point '+str(args.context_error_stopping_point)
+    cmd += ['--stopping_point',str(args.context_error_stopping_point)]
   if indfile:
-    cmd += ' --input_index '+indfile+' '
+    cmd += ['--input_index',indfile]
   sys.stderr.write("Making context plot\n")
-  sys.stderr.write(cmd+"\n")
+  sys.stderr.write(" ".join(cmd)+"\n")
   bam_to_context_error_plot.external_cmd(cmd)
-  tlog.write(cmd)
+  tlog.write(" ".join(cmd))
   tlog.stop()
   time.sleep(3)
   #gc.collect()
 
   tlog.start("alignment based error")
   # 2. Alignment overall error
-  cmd = udir+'/bam_to_alignment_error_plot.py '+args.input+' -r '+args.reference+' --output_stats '+args.tempdir+'/data/error_stats.txt --output_raw '+args.tempdir+'/data/error_data.txt -o '+args.tempdir+'/plots/alignment_error_plot.png '+args.tempdir+'/plots/alignment_error_plot.pdf'
-  cmd += ' --rscript_path '+args.rscript_path+' '
+  cmd = [udir+'/bam_to_alignment_error_plot.py',args.input,'-r',
+         args.reference,'--output_stats',args.tempdir+'/data/error_stats.txt',
+         '--output_raw',args.tempdir+'/data/error_data.txt','-o',
+         args.tempdir+'/plots/alignment_error_plot.png',
+         args.tempdir+'/plots/alignment_error_plot.pdf','--rscript_path',
+         args.rscript_path]
   if args.alignment_error_scale:
-    cmd += ' --scale '+' '.join([str(x) for x in args.alignment_error_scale])
+    cmd += ['--scale']+[str(x) for x in args.alignment_error_scale]
   if args.alignment_error_max_length:
-    cmd += ' --max_length '+str(args.alignment_error_max_length)
+    cmd += ['--max_length',str(args.alignment_error_max_length)]
   if indfile:
-    cmd += ' --input_index '+indfile+' '
-  cmd += ' --random '
-  cmd += ' --specific_tempdir '+args.tempdir+'/temp '
+    cmd += ['--input_index',indfile]
+  cmd += ['--random']
+  cmd += ['--specific_tempdir',args.tempdir+'/temp']
   sys.stderr.write("Making alignment error plot\n")
-  sys.stderr.write(cmd+"\n")
+  sys.stderr.write(" ".join(cmd)+"\n")
   bam_to_alignment_error_plot.external_cmd(cmd)
-  tlog.write(cmd)
+  tlog.write(" ".join(cmd))
   tlog.stop()
   time.sleep(3)
   #gc.collect()
@@ -408,13 +440,14 @@ def make_data_bam_annotation(args):
   # 1. Use annotations to identify genomic features (Exon, Intron, Intergenic)
   # And assign membership to reads
   # Stores the feature bed files in a beds folder
-  cmd = udir+'/annotate_from_genomic_features.py --output_beds '+args.tempdir+'/data/beds '
-  cmd += args.tempdir+'/data/best.sorted.gpd.gz '+args.annotation+' '
-  cmd += args.tempdir+'/data/chrlens.txt -o '+args.tempdir+'/data/read_genomic_features.txt.gz '
-  cmd += ' --threads '+str(args.threads)
+  cmd = [udir+'/annotate_from_genomic_features.py','--output_beds',
+         args.tempdir+'/data/beds',args.tempdir+'/data/best.sorted.gpd.gz',
+         args.annotation,args.tempdir+'/data/chrlens.txt','-o',
+         args.tempdir+'/data/read_genomic_features.txt.gz','--threads',
+         str(args.threads)]
   sys.stderr.write("Finding genomic features and assigning reads membership\n")
-  sys.stderr.write(cmd+"\n")
-  tlog.write(cmd)
+  sys.stderr.write(" ".join(cmd)+"\n")
+  tlog.write(" ".join(cmd))
   annotate_from_genomic_features.external_cmd(cmd)
   tlog.stop()
 
@@ -423,139 +456,140 @@ def make_data_bam_annotation(args):
   # 2. Get depth distributions for each feature subset
   # now get depth subsets
   sys.stderr.write("get depths of features\n")
-  cmd = udir+'/get_depth_subset.py '+args.tempdir+'/data/depth.sorted.bed.gz '
-  cmd += args.tempdir+'/data/beds/exon.bed -o '
-  cmd += args.tempdir+'/data/exondepth.bed.gz'
-  sys.stderr.write(cmd+"\n")
+  cmd = [udir+'/get_depth_subset.py',args.tempdir+'/data/depth.sorted.bed.gz',
+         args.tempdir+'/data/beds/exon.bed','-o',
+         args.tempdir+'/data/exondepth.bed.gz']
+  sys.stderr.write(" ".join(cmd)+"\n")
   get_depth_subset.external_cmd(cmd)
-  tlog.write(cmd)
+  tlog.write(" ".join(cmd))
   tlog.stop()
 
   tlog.start("get per-intron subset")
-  cmd = udir+'/get_depth_subset.py '+args.tempdir+'/data/depth.sorted.bed.gz '
-  cmd += args.tempdir+'/data/beds/intron.bed -o '
-  cmd += args.tempdir+'/data/introndepth.bed.gz'
-  sys.stderr.write(cmd+"\n")
+  cmd = [udir+'/get_depth_subset.py',args.tempdir+'/data/depth.sorted.bed.gz',
+         args.tempdir+'/data/beds/intron.bed','-o',
+         args.tempdir+'/data/introndepth.bed.gz']
+  sys.stderr.write(" ".join(cmd)+"\n")
   get_depth_subset.external_cmd(cmd)
-  tlog.write(cmd)
+  tlog.write(" ".join(cmd))
   tlog.stop()
 
   tlog.start("get per intergenic depth")
-  cmd = udir+'/get_depth_subset.py '+args.tempdir+'/data/depth.sorted.bed.gz '
-  cmd += args.tempdir+'/data/beds/intergenic.bed -o '
-  cmd += args.tempdir+'/data/intergenicdepth.bed.gz'
-  sys.stderr.write(cmd+"\n")
+  cmd = [udir+'/get_depth_subset.py',args.tempdir+'/data/depth.sorted.bed.gz',
+         args.tempdir+'/data/beds/intergenic.bed','-o',
+         args.tempdir+'/data/intergenicdepth.bed.gz']
+  sys.stderr.write(" ".join(cmd)+"\n")
   get_depth_subset.external_cmd(cmd)
-  tlog.write(cmd)
+  tlog.write(" ".join(cmd))
   tlog.stop()
 
   tlog.start("plot feature depth png")
   # 3. Plot the feature depth
-  cmd = args.rscript_path+' '+udir+'/plot_feature_depth.r '
-  cmd += args.tempdir+'/data/depth.sorted.bed.gz '
-  cmd += args.tempdir+'/data/exondepth.bed.gz '
-  cmd += args.tempdir+'/data/introndepth.bed.gz '
-  cmd += args.tempdir+'/data/intergenicdepth.bed.gz '
-  cmd += args.tempdir+'/plots/feature_depth.png'
-  sys.stderr.write(cmd+"\n")
+  cmd = [args.rscript_path,udir+'/plot_feature_depth.r',
+         args.tempdir+'/data/depth.sorted.bed.gz',
+         args.tempdir+'/data/exondepth.bed.gz',
+         args.tempdir+'/data/introndepth.bed.gz',
+         args.tempdir+'/data/intergenicdepth.bed.gz',
+         args.tempdir+'/plots/feature_depth.png']
+  sys.stderr.write(" ".join(cmd)+"\n")
   mycall(cmd,args.tempdir+'/logs/featuredepth_png')
-  tlog.write(cmd)
+  tlog.write(" ".join(cmd))
   tlog.stop()
 
   tlog.start("plot feature depth pdf")
-  cmd = args.rscript_path+' '+udir+'/plot_feature_depth.r '
-  cmd += args.tempdir+'/data/depth.sorted.bed.gz '
-  cmd += args.tempdir+'/data/exondepth.bed.gz '
-  cmd += args.tempdir+'/data/introndepth.bed.gz '
-  cmd += args.tempdir+'/data/intergenicdepth.bed.gz '
-  cmd += args.tempdir+'/plots/feature_depth.pdf'
-  sys.stderr.write(cmd+"\n")
+  cmd = [args.rscript_path,udir+'/plot_feature_depth.r',
+         args.tempdir+'/data/depth.sorted.bed.gz',
+         args.tempdir+'/data/exondepth.bed.gz',
+         args.tempdir+'/data/introndepth.bed.gz',
+         args.tempdir+'/data/intergenicdepth.bed.gz',
+         args.tempdir+'/plots/feature_depth.pdf']
+  sys.stderr.write(" ".join(cmd)+"\n")
   mycall(cmd,args.tempdir+'/logs/featuredepth_pdf')
-  tlog.write(cmd)
+  tlog.write(" ".join(cmd))
   tlog.stop()
 
   tlog.start("generate plots of which reads correspont to which features png")
   # 4. Generate plots from reads assigend to features
   sys.stderr.write("Plot read assignment to genomic features\n")
-  cmd = args.rscript_path+' '+udir+'/plot_annotated_features.r '
-  cmd += args.tempdir+'/data/read_genomic_features.txt.gz '
-  cmd += args.tempdir+'/plots/read_genomic_features.png'
-  sys.stderr.write(cmd+"\n")
+  cmd = [args.rscript_path,udir+'/plot_annotated_features.r',
+         args.tempdir+'/data/read_genomic_features.txt.gz',
+         args.tempdir+'/plots/read_genomic_features.png']
+  sys.stderr.write(" ".join(cmd)+"\n")
   mycall(cmd,args.tempdir+'/logs/read_genomic_features_png')
-  tlog.write(cmd)
+  tlog.write(" ".join(cmd))
   tlog.stop()
 
   tlog.start("generate plots of which reads correspont to which features pdf")
-  cmd = args.rscript_path+' '+udir+'/plot_annotated_features.r '
-  cmd += args.tempdir+'/data/read_genomic_features.txt.gz '
-  cmd += args.tempdir+'/plots/read_genomic_features.pdf'
-  sys.stderr.write(cmd+"\n")
+  cmd = [args.rscript_path,udir+'/plot_annotated_features.r',
+         args.tempdir+'/data/read_genomic_features.txt.gz',
+         args.tempdir+'/plots/read_genomic_features.pdf']
+  sys.stderr.write(" ".join(cmd)+"\n")
   mycall(cmd,args.tempdir+'/logs/read_genomic_features_pdf')
-  tlog.write(cmd)
+  tlog.write(" ".join(cmd))
   tlog.stop()
 
   tlog.start("annotate the reads")
   # 5. annotated the best mappend read mappings
-  cmd = 'gpd_annotate.py '+args.tempdir+'/data/best.sorted.gpd.gz -r '+args.annotation+' -o '+args.tempdir+'/data/annotbest.txt.gz'
+  cmd = ['gpd_annotate.py',args.tempdir+'/data/best.sorted.gpd.gz','-r',
+         args.annotation,'-o',args.tempdir+'/data/annotbest.txt.gz']
   if args.threads:
-    cmd += ' --threads '+str(args.threads)
+    cmd += ['--threads',str(args.threads)]
   sys.stderr.write("Annotating reads\n")
-  sys.stderr.write(cmd+"\n")
+  sys.stderr.write(" ".join(cmd)+"\n")
   gpd_annotate(cmd)
-  tlog.write(cmd)
+  tlog.write(" ".join(cmd))
   tlog.stop()
   time.sleep(3)
 
   tlog.start("plot by transcript length png")
   # 6. Make plots of the transcript lengths
   sys.stderr.write("Make plots from transcript lengths\n")
-  cmd = args.rscript_path+' '+udir+'/plot_transcript_lengths.r '
-  cmd += args.tempdir+'/data/annotbest.txt.gz '
-  cmd += args.tempdir+'/plots/transcript_distro.png'
-  sys.stderr.write(cmd+"\n")
+  cmd = [args.rscript_path,udir+'/plot_transcript_lengths.r',
+         args.tempdir+'/data/annotbest.txt.gz',
+         args.tempdir+'/plots/transcript_distro.png']
+  sys.stderr.write(" ".join(cmd)+"\n")
   mycall(cmd,args.tempdir+'/logs/transcript_distro_png')
-  tlog.write(cmd)
+  tlog.write(" ".join(cmd))
   tlog.stop()
 
   tlog.start("plot by transcript length png")
   sys.stderr.write("Make plots from transcript lengths\n")
-  cmd = args.rscript_path+' '+udir+'/plot_transcript_lengths.r '
-  cmd += args.tempdir+'/data/annotbest.txt.gz '
-  cmd += args.tempdir+'/plots/transcript_distro.pdf'
-  sys.stderr.write(cmd+"\n")
+  cmd = [args.rscript_path,udir+'/plot_transcript_lengths.r',
+         args.tempdir+'/data/annotbest.txt.gz',
+         args.tempdir+'/plots/transcript_distro.pdf']
+  sys.stderr.write(" ".join(cmd)+"\n")
   mycall(cmd,args.tempdir+'/logs/transcript_distro_pdf')
-  tlog.write(cmd)
+  tlog.write(" ".join(cmd))
   tlog.stop()
 
   tlog.start("make length distribution from annotations")
   # 7. Make length distributions for plotting
   sys.stderr.write("making length distributions from annotations\n")
-  cmd = udir+'/annotated_length_analysis.py '
-  cmd += args.tempdir+'/data/best.sorted.gpd.gz '
-  cmd += args.tempdir+'/data/annotbest.txt.gz '
-  cmd += '-o '+args.tempdir+'/data/annot_lengths.txt.gz'
-  sys.stderr.write(cmd+"\n")
+  cmd = [udir+'/annotated_length_analysis.py',
+         args.tempdir+'/data/best.sorted.gpd.gz',
+         args.tempdir+'/data/annotbest.txt.gz',
+         '-o',args.tempdir+'/data/annot_lengths.txt.gz']
+  sys.stderr.write(" ".join(cmd)+"\n")
   annotated_length_analysis.external_cmd(cmd)
-  tlog.write(cmd)
+  tlog.write(" ".join(cmd))
   tlog.stop()
 
   tlog.start("plot annot length distro png")
   # 8. Plot length distributions
-  cmd = args.rscript_path+' '+udir+'/plot_annotation_analysis.r '
-  cmd += args.tempdir+'/data/annot_lengths.txt.gz '
-  cmd += args.tempdir+'/plots/annot_lengths.png'
-  sys.stderr.write(cmd+"\n")
+  cmd = [args.rscript_path,udir+'/plot_annotation_analysis.r',
+         args.tempdir+'/data/annot_lengths.txt.gz',
+         args.tempdir+'/plots/annot_lengths.png']
+  sys.stderr.write(" ".join(cmd)+"\n")
   mycall(cmd,args.tempdir+'/logs/annot_lengths_png')
-  tlog.write(cmd)
+  tlog.write(" ".join(cmd))
   tlog.stop()
 
   tlog.start("plot annot length distro png")
-  cmd = args.rscript_path+' '+udir+'/plot_annotation_analysis.r '
-  cmd += args.tempdir+'/data/annot_lengths.txt.gz '
-  cmd += args.tempdir+'/plots/annot_lengths.pdf'
-  sys.stderr.write(cmd+"\n")
+  cmd = [args.rscript_path,udir+'/plot_annotation_analysis.r',
+         args.tempdir+'/data/annot_lengths.txt.gz',
+         args.tempdir+'/plots/annot_lengths.pdf']
+  sys.stderr.write(" ".join(cmd)+"\n")
   mycall(cmd,args.tempdir+'/logs/annot_lengths_pdf')
-  tlog.write(cmd)
+  tlog.write(" ".join(cmd))
   tlog.stop()
 
   # 9. Get rarefraction curve data
@@ -569,63 +603,60 @@ def make_data_bam_annotation(args):
 
   tlog.start("get rarefraction gene")
   sys.stderr.write("Writing rarefraction curves\n")
-  cmd =  udir+'/gpd_annotation_to_rarefraction.py '+args.tempdir+'/data/annotbest.txt.gz '
-  cmd += ' --samples_per_xval '+str(args.samples_per_xval)
-  cmd += ' --original_read_count '+str(rcnt)
-  cmd += ' --threads '+str(args.threads)
-  cmd += ' --gene -o '+args.tempdir+'/data/gene_rarefraction.txt'
-  sys.stderr.write(cmd+"\n")
+  cmd =  [udir+'/gpd_annotation_to_rarefraction.py',
+          args.tempdir+'/data/annotbest.txt.gz',
+          '--samples_per_xval',str(args.samples_per_xval),
+          '--original_read_count',str(rcnt),'--threads',str(args.threads),
+          '--gene','-o',args.tempdir+'/data/gene_rarefraction.txt']
+  sys.stderr.write(" ".join(cmd)+"\n")
   gpd_annotation_to_rarefraction.external_cmd(cmd)
-  tlog.write(cmd)
+  tlog.write(" ".join(cmd))
   tlog.stop()
 
   tlog.start("rarefraction transcript")
-  cmd =  udir+'/gpd_annotation_to_rarefraction.py '+args.tempdir+'/data/annotbest.txt.gz '
-  cmd += ' --samples_per_xval '+str(args.samples_per_xval)
-  cmd += ' --original_read_count '+str(rcnt)
-  cmd += ' --threads '+str(args.threads)
-  cmd += ' --transcript -o '+args.tempdir+'/data/transcript_rarefraction.txt'
-  sys.stderr.write(cmd+"\n")
+  cmd =  [udir+'/gpd_annotation_to_rarefraction.py',
+          args.tempdir+'/data/annotbest.txt.gz','--samples_per_xval',
+          str(args.samples_per_xval),'--original_read_count',str(rcnt),
+          '--threads',str(args.threads),'--transcript','-o',
+          args.tempdir+'/data/transcript_rarefraction.txt']
+  sys.stderr.write(" ".join(cmd)+"\n")
   gpd_annotation_to_rarefraction.external_cmd(cmd)
-  tlog.write(cmd)
+  tlog.write(" ".join(cmd))
   tlog.stop()
 
   tlog.start("rarefraction gene full")
-  cmd =  udir+'/gpd_annotation_to_rarefraction.py '+args.tempdir+'/data/annotbest.txt.gz '
-  cmd += ' --samples_per_xval '+str(args.samples_per_xval)
-  cmd += ' --original_read_count '+str(rcnt)
-  cmd += ' --threads '+str(args.threads)
-  cmd += ' --full --gene -o '+args.tempdir+'/data/gene_full_rarefraction.txt'
-  sys.stderr.write(cmd+"\n")
+  cmd =  [udir+'/gpd_annotation_to_rarefraction.py',
+          args.tempdir+'/data/annotbest.txt.gz','--samples_per_xval',
+          str(args.samples_per_xval),'--original_read_count',str(rcnt),
+          '--threads',str(args.threads),'--full','--gene','-o',
+          args.tempdir+'/data/gene_full_rarefraction.txt']
+  sys.stderr.write(" ".join(cmd)+"\n")
   gpd_annotation_to_rarefraction.external_cmd(cmd)
-  tlog.write(cmd)
+  tlog.write(" ".join(cmd))
   tlog.stop()
 
   tlog.start("rarefraction gene full")
-  cmd =  udir+'/gpd_annotation_to_rarefraction.py '+args.tempdir+'/data/annotbest.txt.gz '
-  cmd += ' --samples_per_xval '+str(args.samples_per_xval)
-  cmd += ' --original_read_count '+str(rcnt)
-  cmd += ' --threads '+str(args.threads)
-  cmd += ' --full --transcript -o '+args.tempdir+'/data/transcript_full_rarefraction.txt'
-  sys.stderr.write(cmd+"\n")
+  cmd =  [udir+'/gpd_annotation_to_rarefraction.py',
+          args.tempdir+'/data/annotbest.txt.gz','--samples_per_xval',
+          str(args.samples_per_xval),'--original_read_count',str(rcnt),
+          '--threads',str(args.threads),'--full','--transcript','-o',
+          args.tempdir+'/data/transcript_full_rarefraction.txt']
+  sys.stderr.write(" ".join(cmd)+"\n")
   gpd_annotation_to_rarefraction.external_cmd(cmd)
-  tlog.write(cmd)
+  tlog.write(" ".join(cmd))
   tlog.stop()
 
   tlog.start("plot multiple rarefractions")
   # 10. Plot the rarefraction curves
   for type in ['gene','transcript']:
     for ext in ['png','pdf']:
-      cmd = args.rscript_path+' '+udir+'/plot_annotation_rarefractions.r '+\
-             args.tempdir+'/plots/'+type+'_rarefraction.'+ext+' '+\
-             type+' '+\
-             args.tempdir+'/data/'+type+'_rarefraction.txt '+\
-             '#FF000088 '+\
-              args.tempdir+'/data/'+type+'_full_rarefraction.txt '+\
-             '#0000FF88 '
-      sys.stderr.write(cmd+"\n")
+      cmd = [args.rscript_path,udir+'/plot_annotation_rarefractions.r',
+             args.tempdir+'/plots/'+type+'_rarefraction.'+ext,type,
+             args.tempdir+'/data/'+type+'_rarefraction.txt','#FF000088',
+             args.tempdir+'/data/'+type+'_full_rarefraction.txt','#0000FF88']
+      sys.stderr.write(" ".join(cmd)+"\n")
       mycall(cmd,args.tempdir+'/logs/plot_'+type+'_rarefraction_'+ext)
-      tlog.write(cmd)
+      tlog.write(" ".join(cmd))
   tlog.stop()
 
   if os.name == 'nt' or sys.platform == 'darwin': return 
@@ -634,27 +665,30 @@ def make_data_bam_annotation(args):
   sys.stderr.write("downsampling mappings for bias calculation\n")
   cmd0 = 'zcat'
   if args.threads > 1:
-    cmd1 = 'sort -R -S1G -T '+args.tempdir+'/temp --parallel='+str(args.threads)
+    cmd1 = ['sort','-R','-S1G','-T',
+            args.tempdir+'/temp','--parallel='+str(args.threads)]
   else:
-    cmd1 = 'sort -R -S1G -T '+args.tempdir+'/temp'
+    cmd1 = ['sort','-R','-S1G','-T',args.tempdir+'/temp']
   cmd2 = 'head -n '+str(args.max_bias_data)
   if args.threads > 1:
-    cmd3 = 'sort -k3,3 -k5,5n -k 6,6n -S1G -T '+args.tempdir+'/temp --parallel='+str(args.threads)
+    cmd3 = ['sort','-k3,3','-k5,5n','-k','6,6n','-S1G','-T',
+            args.tempdir+'/temp --parallel='+str(args.threads)]
   else:
-    cmd3 = 'sort -k3,3 -k5,5n -k 6,6n -S1G -T '+args.tempdir+'/temp'
+    cmd3 = ['sort','-k3,3','-k5,5n','-k','6,6n','-S1G','-T',
+            args.tempdir+'/temp']
   inf = open(args.tempdir+'/data/best.sorted.gpd.gz')
   of = gzip.open(args.tempdir+'/temp/best.random.sorted.gpd.gz','w')
   if os.name != 'nt':
     p0 = Popen(cmd0.split(),stdin=inf,stdout=PIPE)
-    p1 = Popen(cmd1.split(),stdin=p0.stdout,stdout=PIPE)
+    p1 = Popen(cmd1,stdin=p0.stdout,stdout=PIPE)
     p2 = Popen(cmd2.split(),stdin=p1.stdout,stdout=PIPE)
-    p3 = Popen(cmd3.split(),stdin=p2.stdout,stdout=PIPE)
+    p3 = Popen(cmd3,stdin=p2.stdout,stdout=PIPE)
   else:
     sys.stderr.write("WARNING: Windows OS detected. using shell.")
     p0 = Popen(cmd0,stdin=inf,stdout=PIPE,shell=True)
-    p1 = Popen(cmd1,stdin=p0.stdout,stdout=PIPE,shell=True)
+    p1 = Popen(" ".join(cmd1),stdin=p0.stdout,stdout=PIPE,shell=True)
     p2 = Popen(cmd2,stdin=p1.stdout,stdout=PIPE,shell=True)
-    p3 = Popen(cmd3,stdin=p2.stdout,stdout=PIPE,shell=True)
+    p3 = Popen(" ".join(cmd3),stdin=p2.stdout,stdout=PIPE,shell=True)
   for line in p3.stdout:
     of.write(line)
   p3.communicate()
@@ -681,64 +715,64 @@ def make_data_bam_annotation(args):
   tlog.start("use annotations to check for 5' to 3' biase")
   # 11. Use annotation outputs to check for  bias
   sys.stderr.write("Prepare bias data\n")
-  cmd = udir+'/annotated_read_bias_analysis.py '+\
-        args.tempdir+'/temp/best.random.sorted.gpd.gz '+\
-        args.annotation+' '+ args.tempdir+'/temp/annotbest.random.txt.gz '+\
-        '-o '+args.tempdir+'/data/bias_table.txt.gz '+\
-        '--output_counts '+args.tempdir+'/data/bias_counts.txt '+\
-        '--allow_overflowed_matches '+\
-        '--threads '+str(args.threads)+" "+\
-        '--specific_tempdir '+args.tempdir+'/temp'
-  sys.stderr.write(cmd+"\n")
+  cmd = [udir+'/annotated_read_bias_analysis.py',
+        args.tempdir+'/temp/best.random.sorted.gpd.gz',args.annotation,
+        args.tempdir+'/temp/annotbest.random.txt.gz','-o',
+        args.tempdir+'/data/bias_table.txt.gz','--output_counts',
+        args.tempdir+'/data/bias_counts.txt','--allow_overflowed_matches',
+        '--threads',str(args.threads),'--specific_tempdir',args.tempdir+'/temp']
+  sys.stderr.write(" ".join(cmd)+"\n")
   annotated_read_bias_analysis.external_cmd(cmd)
-  tlog.write(cmd)
+  tlog.write(" ".join(cmd))
   tlog.stop()
 
   tlog.start("plot bias png")
   # 12. Plot bias
-  cmd = args.rscript_path+' '+udir+'/plot_bias.r '+args.tempdir+'/data/bias_table.txt.gz '+\
-        args.tempdir+'/plots/bias.png'
-  sys.stderr.write(cmd+"\n")
+  cmd = [args.rscript_path,udir+'/plot_bias.r',
+         args.tempdir+'/data/bias_table.txt.gz',
+         args.tempdir+'/plots/bias.png']
+  sys.stderr.write(" ".join(cmd)+"\n")
   mycall(cmd,args.tempdir+'/logs/bias_png.log')
-  tlog.write(cmd)
+  tlog.write(" ".join(cmd))
   tlog.stop()
 
   tlog.start("plot bias pdf")
-  cmd = args.rscript_path+' '+udir+'/plot_bias.r '+args.tempdir+'/data/bias_table.txt.gz '+\
-        args.tempdir+'/plots/bias.pdf'
-  sys.stderr.write(cmd+"\n")
+  cmd = [args.rscript_path,udir+'/plot_bias.r',
+         args.tempdir+'/data/bias_table.txt.gz',
+         args.tempdir+'/plots/bias.pdf']
+  sys.stderr.write(" ".join(cmd)+"\n")
   mycall(cmd,args.tempdir+'/logs/bias_pdf.log')
-  tlog.write(cmd)
+  tlog.write(" ".join(cmd))
   tlog.stop()
 
   tlog.start("Prepare junction variance data")
   # 13. Get distances of observed junctions from reference junctions
-  cmd = udir+'/gpd_to_junction_variance.py -r '+\
-        args.annotation+' '+\
-        args.tempdir+'/temp/best.random.sorted.gpd.gz '+\
-        '--specific_tempdir '+args.tempdir+'/temp '+\
-        '-o '+args.tempdir+'/data/junvar.txt '+\
-        '--threads '+str(args.threads)
-  sys.stderr.write(cmd+"\n")
+  cmd = [udir+'/gpd_to_junction_variance.py','-r',args.annotation,
+        args.tempdir+'/temp/best.random.sorted.gpd.gz',
+        '--specific_tempdir',args.tempdir+'/temp','-o',
+        args.tempdir+'/data/junvar.txt','--threads',str(args.threads)]
+  sys.stderr.write(" ".join(cmd)+"\n")
   gpd_to_junction_variance.external_cmd(cmd)
-  tlog.write(cmd)
+  tlog.write(" ".join(cmd))
   tlog.stop()
 
   tlog.start("plot junvar png")
   # 14. Junction distances
-  cmd = args.rscript_path+' '+udir+'/plot_junvar.r '+args.tempdir+'/data/junvar.txt '+\
-        args.tempdir+'/plots/junvar.png'
-  sys.stderr.write(cmd+"\n")
+  cmd = [args.rscript_path,udir+'/plot_junvar.r',
+         args.tempdir+'/data/junvar.txt',
+         args.tempdir+'/plots/junvar.png']
+  sys.stderr.write(" ".join(cmd)+"\n")
   mycall(cmd,args.tempdir+'/logs/junvar_png.log')
-  tlog.write(cmd)
+  tlog.write(" ".join(cmd))
   tlog.stop()
 
   tlog.start("plot junvar pdf")
-  cmd = args.rscript_path+' '+udir+'/plot_junvar.r '+args.tempdir+'/data/junvar.txt '+\
-        args.tempdir+'/plots/junvar.pdf'
-  sys.stderr.write(cmd+"\n")
+  cmd = [args.rscript_path,udir+'/plot_junvar.r',
+         args.tempdir+'/data/junvar.txt',
+         args.tempdir+'/plots/junvar.pdf']
+  sys.stderr.write(" ".join(cmd)+"\n")
   mycall(cmd,args.tempdir+'/logs/junvar_pdf.log')
-  tlog.write(cmd)
+  tlog.write(" ".join(cmd))
   tlog.stop()
 
   return
@@ -747,7 +781,7 @@ def make_data_bam_annotation(args):
 def mycall(cmd,lfile):
   ofe = open(lfile+'.err','w')
   ofo = open(lfile+'.out','w')
-  p = Popen(cmd.split(),stderr=ofe,stdout=ofo)
+  p = Popen(cmd,stderr=ofe,stdout=ofo)
   p.communicate()
   ofe.close()
   ofo.close()
