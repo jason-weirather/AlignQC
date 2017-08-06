@@ -61,11 +61,11 @@ def main(args):
 
 
   ## Extract data that can be realized from the bam and reference
-  if args.reference:
+  if args.genome:
     make_data_bam_reference(args)
 
   ## Extract data that can be realized from bam and reference annotation
-  if args.annotation:
+  if args.gpd:
     make_data_bam_annotation(args)
 
   # Write params file
@@ -387,7 +387,7 @@ def make_data_bam_reference(args):
 
   tlog.start("Get context error")
   # 1. Context error
-  cmd = [udir+'/bam_to_context_error_plot.py',args.input,'-r',args.reference,
+  cmd = [udir+'/bam_to_context_error_plot.py',args.input,'-r',args.genome,
          '--target','--output_raw',args.tempdir+'/data/context_error_data.txt',
          '-o',args.tempdir+'/plots/context_plot.png',
          args.tempdir+'/plots/context_plot.pdf','--rscript_path',
@@ -410,7 +410,7 @@ def make_data_bam_reference(args):
   tlog.start("alignment based error")
   # 2. Alignment overall error
   cmd = [udir+'/bam_to_alignment_error_plot.py',args.input,'-r',
-         args.reference,'--output_stats',args.tempdir+'/data/error_stats.txt',
+         args.genome,'--output_stats',args.tempdir+'/data/error_stats.txt',
          '--output_raw',args.tempdir+'/data/error_data.txt','-o',
          args.tempdir+'/plots/alignment_error_plot.png',
          args.tempdir+'/plots/alignment_error_plot.pdf','--rscript_path',
@@ -442,7 +442,7 @@ def make_data_bam_annotation(args):
   # Stores the feature bed files in a beds folder
   cmd = [udir+'/annotate_from_genomic_features.py','--output_beds',
          args.tempdir+'/data/beds',args.tempdir+'/data/best.sorted.gpd.gz',
-         args.annotation,args.tempdir+'/data/chrlens.txt','-o',
+         args.gpd,args.tempdir+'/data/chrlens.txt','-o',
          args.tempdir+'/data/read_genomic_features.txt.gz','--threads',
          str(args.threads)]
   sys.stderr.write("Finding genomic features and assigning reads membership\n")
@@ -530,7 +530,7 @@ def make_data_bam_annotation(args):
   tlog.start("annotate the reads")
   # 5. annotated the best mappend read mappings
   cmd = ['gpd_annotate.py',args.tempdir+'/data/best.sorted.gpd.gz','-r',
-         args.annotation,'-o',args.tempdir+'/data/annotbest.txt.gz']
+         args.gpd,'-o',args.tempdir+'/data/annotbest.txt.gz']
   if args.threads:
     cmd += ['--threads',str(args.threads)]
   sys.stderr.write("Annotating reads\n")
@@ -716,7 +716,7 @@ def make_data_bam_annotation(args):
   # 11. Use annotation outputs to check for  bias
   sys.stderr.write("Prepare bias data\n")
   cmd = [udir+'/annotated_read_bias_analysis.py',
-        args.tempdir+'/temp/best.random.sorted.gpd.gz',args.annotation,
+        args.tempdir+'/temp/best.random.sorted.gpd.gz',args.gpd,
         args.tempdir+'/temp/annotbest.random.txt.gz','-o',
         args.tempdir+'/data/bias_table.txt.gz','--output_counts',
         args.tempdir+'/data/bias_counts.txt','--allow_overflowed_matches',
@@ -747,7 +747,7 @@ def make_data_bam_annotation(args):
 
   tlog.start("Prepare junction variance data")
   # 13. Get distances of observed junctions from reference junctions
-  cmd = [udir+'/gpd_to_junction_variance.py','-r',args.annotation,
+  cmd = [udir+'/gpd_to_junction_variance.py','-r',args.gpd,
         args.tempdir+'/temp/best.random.sorted.gpd.gz',
         '--specific_tempdir',args.tempdir+'/temp','-o',
         args.tempdir+'/data/junvar.txt','--threads',str(args.threads)]

@@ -11,18 +11,18 @@ RUN apt-get update \
     && apt-get autoremove \
     && apt-get clean
 
-VOLUME /data
 VOLUME /temp
-Volume /output
+VOLUME /root
+
+RUN mkdir /source
+RUN cd /source/ \
+    && git clone https://github.com/jason-weirather/py-seq-tools.git
+RUN cd /source/py-seq-tools && pip install -e .
+
+RUN cd /source/ && git clone https://github.com/jason-weirather/AlignQC.git
+RUN cd /source/AlignQC && git checkout dev && pip install -e .
 
 ENV HOME /root
-
 WORKDIR /root
 
-RUN git clone https://github.com/jason-weirather/py-seq-tools.git
-RUN cd /root/py-seq-tools && pip install -e .
-
-RUN git clone https://github.com/jason-weirather/AlignQC.git
-RUN cd /root/AlignQC && git checkout dev && pip install -e .
-
-#CMD ["bash"]
+#CMD ["/usr/local/bin/alignqc"]

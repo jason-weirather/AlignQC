@@ -66,7 +66,7 @@ def make_html(args):
 
   #Only have error stats if we are using it
   e = {}
-  if args.reference:
+  if args.genome:
     #read in our error data
     with open(args.tempdir+'/data/error_stats.txt') as inf:
       for line in inf:
@@ -91,7 +91,7 @@ def make_html(args):
   inf.close()
 
   # The annotation section
-  if args.annotation:
+  if args.gpd:
     inf = open(args.tempdir+'/data/beds/exon.bed')
     coverage_data['exons_total'] = 0
     bs = BedStream(inf)
@@ -138,10 +138,10 @@ def make_html(args):
     # deal with annotations
     ref_genes = {}
     ref_transcripts = {}
-    if args.annotation[-3:] == '.gz':
-        gs = GPDStream(gzip.open(args.annotation))
+    if args.gpd[-3:] == '.gz':
+        gs = GPDStream(gzip.open(args.gpd))
     else:
-        gs = GPDStream(open(args.annotation))
+        gs = GPDStream(open(args.gpd))
     #gs = GPDStream(inf)
     for gpd in gs:
        tx_to_gene[gpd.transcript_name] = gpd.gene_name
@@ -167,7 +167,7 @@ def make_html(args):
     inf.close()
 
   #get our annotation counts
-  if args.annotation:
+  if args.gpd:
     genefull = 0
     geneany = 0
     txfull = 0
@@ -195,7 +195,7 @@ def make_html(args):
     geneany = len(genes_a.keys())
     txfull = len(txs_f.keys())
     txany = len(txs_a.keys())
-    # still in args.annotation required
+    # still in args.gpd required
     #Get evidence counts for bias
     bias_tx_count = None
     bias_read_count = None
@@ -270,8 +270,7 @@ def make_html(args):
     </div>
     <div class="input_value">'''
   of.write(ostr)
-  #if args.reference:
-  of.write(str(args.reference))
+  of.write(str(args.genome))
   #else:
   #  of.write('&#xA0;'*20)
   ostr = '''
@@ -279,12 +278,14 @@ def make_html(args):
   </div>
   <div class="top_block">
     <div>
-    Reference Annotation:
+    Reference Transcriptome:
     </div>
     <div class="input_value">'''
   of.write(ostr)
-  #if args.reference:
-  of.write(str(args.annotation))
+  if args.gtf:
+     of.write(str(args.gtf))
+  else:
+     of.write(str(args.gpd))
   #else:
   #  of.write('&#xA0;'*20)
   ostr = '''
@@ -423,7 +424,7 @@ def make_html(args):
   # 3. ANNOTATION ANALYSIS
 
   ### This block should only be done when we have annotations
-  if args.annotation:
+  if args.gpd:
     ostr = '''
 <div class="result_block">
   <div class="subject_title">Annotation Analysis</div>
@@ -529,7 +530,7 @@ def make_html(args):
 '''
   of.write(ostr)
   ### The next part of coverage requires annotations
-  if args.annotation:
+  if args.gpd:
     ostr = '''
   <div class="one_half left">
     <table class="data_table one_half">
@@ -595,12 +596,12 @@ def make_html(args):
   # 5. RAREFRACTION ANALYSIS
 
   ### Rarefraction analysis block requires do_loci or annotations
-  if args.do_loci or args.annotation:
+  if args.do_loci or args.gpd:
     ostr = '''
 <div class="subject_title"><table><tr><td class="c1">Rarefraction analysis</td>
 '''
     of.write(ostr)
-    if args.annotation:
+    if args.gpd:
       ostr = '''
 <td class="c2"><span class="highlight">
 '''
@@ -625,7 +626,7 @@ def make_html(args):
   <div class="one_half left">
 '''
     of.write(ostr)
-    if args.annotation:
+    if args.gpd:
       ostr = '''
     <div class="rhead">Gene detection rarefraction [<a download="gene_rarefraction.pdf" href="plots/gene_rarefraction.pdf">pdf</a>]</div>
     <img src="plots/gene_rarefraction.png" alt="gene_rarefraction_png" />
@@ -636,7 +637,7 @@ def make_html(args):
   </div>
   <div class="clear"></div>
 '''
-      # still in args.annotation
+      # still in args.gpd
       of.write(ostr)
     #done with args.anotation
     ostr = '''
@@ -647,7 +648,7 @@ def make_html(args):
 '''
     # still in do_loci or annotations conditional
     of.write(ostr+"\n")
-    if args.annotation:
+    if args.gpd:
       of.write('<tr><td>Gene</td><td>full-length</td><td>'+str(addcommas(genefull))+'</td></tr>')
       of.write('<tr><td>Gene</td><td>any match</td><td>'+str(addcommas(geneany))+'</td></tr>')
       of.write('<tr><td>Transcript</td><td>full-length</td><td>'+str(addcommas(txfull))+'</td></tr>')
@@ -687,18 +688,18 @@ def make_html(args):
   # 6. ERROR PATTERN
 
   # We need a reference in order to do error pattern analysis
-  if args.reference or args.annotation:
+  if args.genome or args.gpd:
     ostr = '''
 <div class="subject_title">Error pattern analysis &#xA0;&#xA0;&#xA0;&#xA0;<span class="highlight">
 '''
     of.write(ostr)
-  if not args.reference and args.annotation:
+  if not args.genome and args.gpd:
     # We don't have any information to fill in the header about errror rates
     ostr = '''
 </span></div>
 '''
     of.write(ostr)
-  if args.reference:
+  if args.genome:
     # We do have error rate information
     error_rate = perc(e['ANY_ERROR'],e['ALIGNMENT_BASES'],3)
     of.write(error_rate)
@@ -714,14 +715,12 @@ def make_html(args):
   <table class="data_table one_third left">
       <tr class="rhead"><td colspan="3">Alignment stats</td></tr>
 '''
-    # if args.reference
     of.write(ostr+"\n")
     best_alignments_sampled_string = '<tr><td>Best alignments sampled</td><td>'+str(e['ALIGNMENT_COUNT'])+'</td><td></td></tr>'
     of.write(best_alignments_sampled_string+"\n")
     ostr = '''
       <tr class="rhead"><td colspan="3">Base stats</td></tr>
 '''
-    # if args.reference
     of.write(ostr+"\n")
     bases_analyzed_string = '<tr><td>Bases analyzed</td><td>'+str(addcommas(e['ALIGNMENT_BASES']))+'</td><td></td></tr>'
     of.write(bases_analyzed_string+"\n")
@@ -753,7 +752,7 @@ def make_html(args):
 <div class="clear"></div>
 '''
     of.write(ostr)
-  if args.annotation and os.name != 'nt' and sys.platform != 'darwin':
+  if args.gpd and os.name != 'nt' and sys.platform != 'darwin':
     # We can output the junction variance plot
     ostr = '''
   <div class="left full_length">
@@ -764,13 +763,12 @@ def make_html(args):
 '''
     of.write(ostr)
   #close error box if we have a reason to be here
-  if args.reference or args.annotation:
+  if args.genome or args.gpd:
     ostr = '''
 <hr />
 '''
-    #if args.reference
     of.write(ostr)
-  # finished with args.reference condition
+  # finished with args.genome condition
 
   ##############################
   # 8. Raw data block
@@ -825,7 +823,7 @@ def make_html(args):
     of.write('<tr> <td>Loci basics bed:</td><td class="raw_files"><a download="loci.bed.gz" href="data/loci.bed.gz">loci.bed.gz</a></td></tr>'+"\n")
     of.write('<tr><td>Locus read data bed:</td><td class="raw_files"><a download="loci-all.bed.gz" href="data/loci-all.bed.gz">loci-all.bed.gz</a></td></tr>'+"\n")
     of.write('<tr><td>Locus rarefraction:</td><td class="raw_files"><a download="locus_rarefraction.txt" href="data/locus_rarefraction.txt">locus_rarefraction.txt</a></td></tr>'+"\n")
-  if args.annotation:
+  if args.gpd:
     ostr = '''
   <tr>
     <td>Read annotations:</td>
@@ -870,11 +868,11 @@ def make_html(args):
     <td class="raw_files"><a download="junvar.txt" href="data/junvar.txt">junvar.txt</a></td>
   </tr>
 '''
-    # if args.annotation
+    # if args.gpd
     if os.name != 'nt' and sys.platform != 'darwin': of.write(ostr)
-  # done with args.annotation
+  # done with args.gpd
   #output data that depends on reference
-  if args.reference:
+  if args.genome:
     ostr = '''
   <tr>
     <td>Alignment errors data:</td>
@@ -889,7 +887,7 @@ def make_html(args):
     <td class="raw_files"><a download="context_error_data.txt" href="data/context_error_data.txt">context_error_data.txt</a></td>
   </tr>
 '''
-    # if args.reference
+    # if args.genome
     of.write(ostr)
   # back to any condition
   ostr = '''

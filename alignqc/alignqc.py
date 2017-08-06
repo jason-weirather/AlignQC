@@ -8,7 +8,7 @@ import dump
 import compare
 from seqtools.cli.utilities.bam_bgzf_index import external_cmd as index_bam
 
-version = '1.3'
+version = '2.0'
 
 def main():
   operable_argv = [sys.argv[0]]+sys.argv[2:]

@@ -1,10 +1,10 @@
 #!/usr/bin/env python
-import argparse, os, inspect, sys
+import argparse, os, inspect, sys, gzip
 from subprocess import Popen, PIPE
 from tempfile import mkdtemp, gettempdir
 from shutil import rmtree
 from distutils.spawn import find_executable
-
+from seqtools.format.gtf import GTFFile
 
 import prepare_all_data
 import create_html
@@ -36,10 +36,20 @@ def main(args):
     sys.stderr.write("ERROR: Rscript not installed\n")
     sys.exit()
 
-  if args.no_reference:
+  if args.no_genome:
     sys.stderr.write("WARNING: No reference specified.  Will be unable to report error profile\n")
-  if args.no_annotation:
+  if args.no_transcriptome:
     sys.stderr.write("WARNING: No annotation specified.  Will be unable to report feature specific outputs\n")
+
+  #Do the conversion of gtf as early as possible if we have one
+  if args.gtf:
+     if args.gtf[-3:] == '.gz': ginf = gzip.open(args.gtf)
+     else: ginf = gzip.open(args.gtf)
+     gobj = GTFFile(ginf)
+     of = open(args.tempdir+'/txome.gpd','w')
+     gobj.write_genepred(of)
+     of.close()
+     args.gpd = args.tempdir+'/txome.gpd'
 
   prepare_all_data.external(args)
   create_html.external(args,version=g_version)
@@ -85,11 +95,12 @@ def do_inputs():
   label1.add_argument('input',help="INPUT BAM file")
 
   group1 = label1.add_mutually_exclusive_group(required=True)
-  group1.add_argument('-r','--reference',help="Reference Fasta")
-  group1.add_argument('--no_reference',action='store_true',help="No Reference Fasta")
+  group1.add_argument('-g','--genome',help="Reference Fasta")
+  group1.add_argument('--no_genome',action='store_true',help="No Reference Fasta")
   group2 = label1.add_mutually_exclusive_group(required=True)
-  group2.add_argument('-a','--annotation',help="Reference annotation genePred")
-  group2.add_argument('--no_annotation',action='store_true',help="No annotation is available")
+  group2.add_argument('-t','--gtf',help="Reference transcriptome in GTF format, assumes gene_id and transcript_id are defining gene and transcript names")
+  group2.add_argument('--gpd',help="Reference transcriptome in genePred format")
+  group2.add_argument('--no_transcriptome',action='store_true',help="No annotation is available")
 
   # output options
   label2 = parser.add_argument_group(title="Output parameters",description="At least one output parameter must be set")
