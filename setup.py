@@ -26,9 +26,10 @@ setup(
     'License :: OSI Approved :: Apache Software License'
   ],
   keywords='bioinformatics, sequence, alignment',
+  test_suite='tests',
   packages=['alignqc'],
   install_requires = ['seq-tools==1.0.0'],
   entry_points = {
-    'console_scripts':['alignqc=alignqc.alignqc:main']
+    'console_scripts':['alignqc=alignqc.alignqc:entry_point']
   }
 )

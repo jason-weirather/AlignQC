@@ -10,9 +10,7 @@ from seqtools.cli.utilities.bam_bgzf_index import external_cmd as index_bam
 
 version = '2.0'
 
-def main():
-  operable_argv = [sys.argv[0]]+sys.argv[2:]
-  sys.argv = sys.argv[:2]
+def main(args,operable_argv):
   #do our inputs
   args = do_inputs()
   if args.mode == 'analyze':
@@ -32,5 +30,24 @@ def do_inputs():
   args = parser.parse_args()
   return args
 
+def external_cmd(cmd):
+  #set version by input
+  cache_argv = sys.argv
+  sys.argv = cmd
+  operable_argv = [sys.argv[0]]+sys.argv[2:]
+  sys.argv = sys.argv[:2]
+  args = do_inputs()
+  main(args,operable_argv)
+  sys.argv = cache_argv
+
+def entry_point():
+  operable_argv = [sys.argv[0]]+sys.argv[2:]
+  sys.argv = sys.argv[:2]
+  args = do_inputs()
+  main(args,operable_argv)
+
 if __name__=="__main__":
-  main()
+  operable_argv = [sys.argv[0]]+sys.argv[2:]
+  sys.argv = sys.argv[:2]
+  args = do_inputs()
+  main(args,operable_argv)
