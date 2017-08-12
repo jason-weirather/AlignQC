@@ -11,16 +11,16 @@ RUN apt-get update \
     && apt-get autoremove \
     && apt-get clean
 
+RUN pip install --upgrade pip
+RUN pip install seq-tools==1.0.4
+
 VOLUME /temp
 VOLUME /root
 
 RUN mkdir /source
-RUN cd /source/ \
-    && git clone https://github.com/jason-weirather/py-seq-tools.git
-RUN cd /source/py-seq-tools && pip install -e .
 
-RUN cd /source/ && git clone https://github.com/jason-weirather/AlignQC.git
-RUN cd /source/AlignQC && git checkout dev && pip install -e .
+COPY . /source/AlignQC
+RUN cd /source/AlignQC && pip install .
 
 ENV HOME /root
 WORKDIR /root
