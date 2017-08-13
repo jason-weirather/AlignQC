@@ -12,7 +12,7 @@ with open(path.join(this_folder,'README.md'),encoding='utf-8') as inf:
 
 setup(
   name='AlignQC',
-  version='2.0.3',
+  version='2.0.4',
   description='Python and R based tool for assessing the quality of alignments',
   long_description=long_description,
   url='https://github.com/jason-weirather/AlignQC',
