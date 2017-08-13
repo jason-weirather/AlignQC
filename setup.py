@@ -12,8 +12,8 @@ with open(path.join(this_folder,'README.md'),encoding='utf-8') as inf:
 
 setup(
   name='AlignQC',
-  version='2.0.0',
-  description='Python tools for working with biological sequence data',
+  version='2.0.1',
+  description='Python and R based tool for assessing the quality of alignments',
   long_description=long_description,
   url='https://github.com/jason-weirather/AlignQC',
   author='Jason L Weirather',

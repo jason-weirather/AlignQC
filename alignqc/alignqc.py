@@ -8,7 +8,7 @@ import dump
 import compare
 from seqtools.cli.utilities.bam_bgzf_index import external_cmd as index_bam
 
-version = '2.0'
+version = '2.0.1'
 
 def main(args,operable_argv):
   #do our inputs
