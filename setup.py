@@ -12,7 +12,7 @@ with open(path.join(this_folder,'README.md'),encoding='utf-8') as inf:
 
 setup(
   name='AlignQC',
-  version='2.0.1',
+  version='2.0.3',
   description='Python and R based tool for assessing the quality of alignments',
   long_description=long_description,
   url='https://github.com/jason-weirather/AlignQC',
@@ -28,6 +28,7 @@ setup(
   keywords='bioinformatics, sequence, alignment',
   test_suite='tests',
   packages=['alignqc'],
+  package_data={'alignqc':['data/mystyle.css','*.r']},
   install_requires = ['seq-tools==1.0.7'],
   entry_points = {
     'console_scripts':['alignqc=alignqc.alignqc:entry_point']

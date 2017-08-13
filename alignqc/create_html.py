@@ -211,7 +211,7 @@ def make_html(args):
     os.makedirs(args.tempdir+'/css')
   udir = os.path.dirname(os.path.realpath(__file__))
   #copy css into that directory
-  copy(udir+'/../data/mystyle.css',args.tempdir+'/css/mystyle.css')
+  copy(udir+'/data/mystyle.css',args.tempdir+'/css/mystyle.css')
   of = open(args.tempdir+'/report.xhtml','w')
   ostr = '''
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">

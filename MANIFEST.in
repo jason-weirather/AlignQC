@@ -1,5 +1,4 @@
 include README.md
 include LICENSE
-recursive-include data *.css
 recursive-include scripts *.py
 recursive-include alignqc *.r
