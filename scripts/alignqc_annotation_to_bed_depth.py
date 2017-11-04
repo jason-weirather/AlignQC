@@ -45,7 +45,7 @@ def main():
       gpd = GPD(line)
       exs = []
       for ex in gpd.exons:
-        exs.append(ex.get_range())
+        exs.append(ex.range)
       txs[gpd.get_transcript_name()] = exs
   sys.stderr.write("\n")
   vals = []

@@ -187,10 +187,10 @@ def do_tx_line(vals):
     (ref_gpd,reads,args) = vals
     allbits = []
     read_count = 0
-    outrange = reads[-1].get_range()
+    outrange = reads[-1].range
     for read in reads:
-      if not args.allow_overflowed_matches and read.get_range().start < ref_gpd.get_range().start: continue
-      if not args.allow_overflowed_matches and read.get_range().end > ref_gpd.get_range().end: continue
+      if not args.allow_overflowed_matches and read.range.start < ref_gpd.range.start: continue
+      if not args.allow_overflowed_matches and read.range.end > ref_gpd.range.end: continue
       v = ref_gpd.union(read)
       for e in [x.rng for x in v.exons]: allbits.append(e)
       read_count += 1
@@ -283,9 +283,10 @@ class Annot:
   def __init__(self,line):
     f = line.rstrip().split("\t")
     self.value = parse_annot(f)
-    self.range = GenomicRangeFromString(f[13])
-  def get_range(self):
-    return self.range
+    self._range = GenomicRangeFromString(f[13])
+  @property
+  def range(self):
+    return self._range
   def get_value(self):
     return self.value
 
