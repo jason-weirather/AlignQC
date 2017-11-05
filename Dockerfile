@@ -12,15 +12,12 @@ RUN apt-get update \
     && apt-get clean
 
 RUN pip install --upgrade pip
-RUN pip install seq-tools==1.0.7
+RUN pip install seq-tools==1.0.10
 
 VOLUME /temp
 VOLUME /root
 
-RUN mkdir /source
-
-COPY . /source/AlignQC
-RUN cd /source/AlignQC && pip install .
+RUN pip install AlignQC==2.0.5
 
 ENV HOME /root
 WORKDIR /root
