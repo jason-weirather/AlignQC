@@ -15,8 +15,9 @@ requirements:
     - setuptools
   run:
     - python 2.7.*
+    - r-essentials
 
 about:
   home: https://github.com/jason-weirather/AlignQC
-  license: Custom
+  license: Apache 2.0
   license_file: LICENSE
