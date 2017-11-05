@@ -20,10 +20,10 @@ if(filex=="pdf") {
     stop("Unsupported type for output file.\n",call.=FALSE)
 }
 
-dg<-read.table(gzfile(args[1]))
-dexon<-read.table(gzfile(args[2]))
-dintron<-read.table(gzfile(args[3]))
-dinter<-read.table(gzfile(args[4]))
+dg<-read.csv(gzfile(args[1]),sep="\t",header=FALSE)
+dexon<-read.csv(gzfile(args[2]),sep="\t",header=FALSE)
+dintron<-read.csv(gzfile(args[3]),sep="\t",header=FALSE)
+dinter<-read.csv(gzfile(args[4]),sep="\t",header=FALSE)
 
 logtrans<-function(num) {
  if(num==1) {

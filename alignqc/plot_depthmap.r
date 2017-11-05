@@ -28,7 +28,7 @@ mytrans<-function(pos,clen,minlen,maxlen) {
   return((pos/clen)*tot)
 }
 
-d<-read.table(args[2])
+d<-read.csv(args[2],sep="\t",header=FALSE)
 #ordered_names = as.vector(d[order(names(chrlens)),1])
 #ordered_lens = as.vector(d[order(names(chrlens)),2])
 ordered_names = as.vector(d[order(d[,1]),1])
@@ -38,7 +38,7 @@ maxlen = max(ordered_lens)
 chr = cbind.data.frame(ordered_names,ordered_lens)
 longest = max(chr[,2])
 
-dstrata<-read.table(args[3],header=TRUE)
+dstrata<-read.csv(args[3],header=TRUE,sep="\t")
 
 layout(rbind(c(1,2)),heights=c(1),widths=c(4,1))
 par(mar=c(5,1,1,1))
@@ -50,7 +50,7 @@ for (i in 1:length(ordered_names)) {
   clen = ordered_lens[i]
   rect(i-0.4,0,i+0.4,mytrans(chr[i,2],clen,minlen,maxlen))
 }
-e<-read.table(gzfile(args[1]))
+e<-read.csv(gzfile(args[1]),sep="\t",header=FALSE)
 f<-e[order(e[,4]),]
 colfunc<-colorRampPalette(c("#00000088","#0000FF88","#FF000088"))
 colarray<-colfunc(length(dstrata[,1]))

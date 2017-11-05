@@ -42,11 +42,10 @@ layout(rbind(c(1,2),c(3,4),c(5,5)),widths=c(1.25,4),heights=c(1,1,1))
 par(las=1)
 
 # get lowest y value for any chrom
-#d<-read.table(gzfile(args[3]))
 absolute_min = 0.00001
 #ymin = min(d[,4]/d[,5])
 
-d<-read.table(gzfile(args[2]))
+d<-read.csv(gzfile(args[2]),sep="\t",header=FALSE)
 par(mar=c(4,9,1,0.5))
 ####### first plot the coverage
 ymax = max(d[,3]/d[,4])
@@ -73,7 +72,7 @@ par(las=1)
 
 par(mar=c(4,0.5,1,1))
 ####### first plot the coverage
-d<-read.table(gzfile(args[3]))
+d<-read.csv(gzfile(args[3]),sep="\t",header=FALSE)
 chr_list = unique(d[,1])
 ymax = max(d[,4]/d[,5])
 #absolute_min = 0.0001
@@ -101,7 +100,7 @@ for (chr in chr_list) {
 }
 
 ##### plot box depth for all data
-d<-read.table(gzfile(args[2]))
+d<-read.csv(gzfile(args[2]),sep="\t",header=FALSE)
 par(mar=c(4,8,1,0.5))
 ymax = max(d[,1])
 ymaxtrans = logtrans(ymax)
@@ -117,7 +116,7 @@ mtext("all",1,at=1,line=0.5,adj=1)
 par(las=1)
 
 
-d<-read.table(gzfile(args[3]))
+d<-read.csv(gzfile(args[3]),sep="\t",header=FALSE)
 ymax = max(d[,2])
 ymaxtrans = logtrans(ymax)
 par(mar=c(4,0.5,1,1))
@@ -138,7 +137,7 @@ for (chr in chr_list) {
   par(las=1)
 }
 
-d<-read.table(gzfile(args[1]))
+d<-read.csv(gzfile(args[1]),sep="\t",header=FALSE)
 par(mar=c(5,8,1,0.5))
 ymax=max(d[,1])
 ymaxtrans=logtrans(ymax)

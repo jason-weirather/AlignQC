@@ -27,7 +27,7 @@ limitcol="#00000044"
 read_count = 0
 gene_any_count_max = 0
 for(name in names) {
-  d1<-read.table(name)
+  d1<-read.csv(name,sep="\t",header=FALSE)
   if(max(d1[,1])>read_count) { read_count = max(d1[,1]) }
   if(max(d1[,4])>gene_any_count_max) { gene_any_count_max = max(d1[,4]) }
 }
@@ -36,7 +36,7 @@ plot(1,type="n",ylim=c(0,gene_any_count_max*1.1),xlim=c(0,read_count*1.1),ylab=p
 z= 0
 for(name in names) {
   z = z+1
-  d1<-read.table(name)
+  d1<-read.csv(name,header=FALSE,sep="\t")
   gene_any_count_median = max(d1[,3])
   abline(h=gene_any_count_median,lwd=limitwid,lty=2,col=limitcol)
   lines(d1[,1],d1[,3],lwd=datawid,col=errcol[z])

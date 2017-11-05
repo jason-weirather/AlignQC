@@ -79,9 +79,9 @@ infile = args[1]
 outfile = args[2]
 infilex = substr(infile,nchar(infile)-1,nchar(infile))
 if(infilex=="gz") {
-  d<-read.table(infile)
+  d<-read.csv(infile,sep="\t",header=FALSE)
 } else {
-  d<-read.table(gzfile(infile))
+  d<-read.csv(gzfile(infile),sep="\t",header=FALSE)
 }
 input_width = 3
 if(length(args) > 2) {

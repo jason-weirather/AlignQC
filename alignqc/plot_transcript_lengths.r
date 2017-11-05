@@ -149,9 +149,9 @@ outfile=args[2]
 infile = args[1]
 infilex = substr(infile,nchar(infile)-1,nchar(infile))
 if(infilex=="gz") {
-  d1<-read.table(infile)
+  d1<-read.csv(infile,sep="\t",header=FALSE)
 } else {
-  d1<-read.table(gzfile(infile))
+  d1<-read.csv(gzfile(infile),sep="\t",header=FALSE)
 }
 d<-data.frame(as.character(d1[,5]))
 d<-cbind(d,as.numeric(d1[,12]),as.numeric(d1[,9]))

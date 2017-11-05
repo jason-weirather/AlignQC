@@ -28,7 +28,7 @@ if(filex=="pdf") {
 } else {
     stop("Unsupported type for output file.\n",call.=FALSE)
 }
-d<-read.table(args[1],header=TRUE)
+d<-read.csv(args[1],header=TRUE,sep="\t")
 mat = matrix(seq(1,30,1),nrow=5,ncol=6,byrow=TRUE)
 #par(mfrow=c(5,6))
 layout(mat,widths=c(1,1,1,1,1,1),heights=c(1,1,1,1,1,1))

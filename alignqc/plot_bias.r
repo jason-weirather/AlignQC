@@ -17,9 +17,9 @@ if(filex=="pdf") {
 
 filex = substr(args[1],nchar(args[1])-1,nchar(args[1]))
 if(filex=='gz') {
-  d<-read.table(gzfile(args[1]),row.names=1)
+  d<-read.csv(gzfile(args[1]),row.names=1,header=FALSE,sep="\t")
 } else {
-  d<-read.table(args[1],row.names=1)
+  d<-read.csv(args[1],row.names=1,header=FALSE,sep="\t")
 }
 myboxcol = '#FFDB58'
 if(length(args)>2) {

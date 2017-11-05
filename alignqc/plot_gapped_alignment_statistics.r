@@ -129,9 +129,9 @@ if (length(args)<2) {
 file_name = args[2]
 infilex = substr(args[1],nchar(args[1])-1,nchar(args[1]))
 if(infilex=="gz") {
-  d<-read.table(args[1])
+  d<-read.csv(args[1],sep="\t",header=FALSE)
 } else {
-  d<-read.table(gzfile(args[1]))
+  d<-read.csv(gzfile(args[1]),sep="\t",header=FALSE)
 }
 
 line_width = 3

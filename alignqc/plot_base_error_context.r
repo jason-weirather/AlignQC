@@ -25,7 +25,7 @@ if(filex=="pdf") {
 } else {
     stop("unsupported type of output file.  rinsmin rinsmax rmismin rmismax rdelmin rdelmax\n",call.=FALSE)
 }
-d<-read.table(args[1],header=TRUE)
+d<-read.csv(args[1],header=TRUE,sep="\t")
 par(bg="#FFFFFF")
 a = 0.5 # width of box
 f = 1.5 # width of legend

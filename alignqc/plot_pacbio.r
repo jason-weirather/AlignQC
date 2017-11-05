@@ -15,7 +15,7 @@ if(filex=="pdf") {
     stop("Unsupported type for output file.\n",call.=FALSE)
 }
 
-d<-read.table(args[1])
+d<-read.csv(args[1],sep="\t",header=FALSE)
 tot = length(d[,1])
 biggest = max(d[,2])
 par(mar=c(5,4.1,1,1))
