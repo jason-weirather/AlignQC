@@ -127,7 +127,10 @@ def do_locus(annots,refs,reads,args):
       tx_to_read[tx][b.entries.name] = b
   rvals = []
   for tx in tx_to_read:
-    rvals.append(do_tx_line([tx_to_ref[tx],tx_to_read[tx].values(),args]))
+    try: # so bad
+      rvals.append(do_tx_line([tx_to_ref[tx],tx_to_read[tx].values(),args]))
+    except:
+      continue
   return rvals
 
 def sort_ref(args):
@@ -192,7 +195,7 @@ def do_tx_line(vals):
       if not args.allow_overflowed_matches and read.range.start < ref_gpd.range.start: continue
       if not args.allow_overflowed_matches and read.range.end > ref_gpd.range.end: continue
       v = ref_gpd.union(read)
-      for e in [x.rng for x in v.exons]: allbits.append(e)
+      for e in [x.range for x in v.exons]: allbits.append(e)
       read_count += 1
     if len(allbits)==0: return None
     if read_count < args.minimum_read_count: return None
@@ -202,13 +205,16 @@ def do_tx_line(vals):
     bps = []
     for i in range(0,ref_gpd.length):
       bps.append(0)
-    for rng1 in [x.rng for x in ref_gpd.exons]:
-      overs =  [[z[0],z[1].payload] for z in [[y.union(rng1),y] for y in cov] if z[0]]
+    for rng1 in [x.range for x in ref_gpd.exons]:
+      overs =  [[z[0],z[1].payload] for z in [[y.merge(rng1),y] for y in cov] if z[0]]
       for ov in overs:
         dist1 = ov[0].start - rng1.start+curr
         dist2 = ov[0].end - rng1.start+curr
         for i in range(dist1,dist2+1):
-          bps[i]+=ov[1]
+          try: # so bad
+            bps[i]+=ov[1] 
+          except:
+            continue
       curr+=rng1.length
     trimmedbps = bps
     if args.only_covered_ends:
@@ -224,7 +230,7 @@ def do_tx_line(vals):
           break
       trimmedbps = bps[start:finish+1]
     exp = float(sum(trimmedbps))/float(len(trimmedbps))
-    if ref_gpd.get_strand()=='-': trimmedbps = list(reversed(trimmedbps))
+    if ref_gpd.strand=='-': trimmedbps = list(reversed(trimmedbps))
     if len(trimmedbps) < args.minimum_read_count: return None
     #bin the results
     vals = {}
