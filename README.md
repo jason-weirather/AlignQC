@@ -13,9 +13,20 @@ $ docker run -v $(pwd)/example_data/:$(pwd)/example_data/ vacation/alignqc align
 $ cd example_data
 ```
 
-Results are in example_data
+##### Easy install via conda
 
-See basic stats, error patterns, and more
+```
+$ conda create -n alignqc -c vacation alignqc
+$ source activate alignqc
+```
+
+#### Install via pip (requires R installed and python 2.7)
+
+```
+$ pip install AlignQC
+```
+
+See basic stats, error patterns, and more in the example data from the docker run example:
 
 ![Basic stats](https://i.imgur.com/oHgEM6t.png)
 
