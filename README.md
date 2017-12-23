@@ -71,7 +71,7 @@ The following command should be sufficient for assessing a long read alignment.
 
 If you don't readily have your reference genome or reference annotation available you can try the following.
 
-`alignqc analysis long_reads.bam --no_reference --no_annotation -o long_reads.alignqc.xhtml`
+`alignqc analysis long_reads.bam --no_genome --no_transcriptome -o long_reads.alignqc.xhtml`
 
 ## AlignQC programs
 Currently AlignQC only offers the `analysis` program.
@@ -100,14 +100,14 @@ http://samtools.github.io/hts-specs/SAMv1.pdf
 Please note that analyzing very large hiseq datasets has not been tested and memory requirements have not been optimized for this type of run.  If you want to check error patterns of HISEQ downsampling the data is advised.
 
 #### (optional) 2. Genome fasta file
-The reference genome these sequences were aligned to, in fasta format, can allows you to assess the error rates and error patterns in the alignments.
+The reference genome `-g` these sequences were aligned to, in fasta format, can allows you to assess the error rates and error patterns in the alignments.
 
-If you choose not to use a reference genome you must explicitly specify `--no_reference`
+If you choose not to use a reference genome you must explicitly specify `--no_genome`
 
 #### (optional) 3. GTF format annotation file
 Providing an annotation file `-t` or `--gtf` provides context such as known transcripts, and exons, introns, and intergenic regions to help describe the data.  It is also necessary for rarefraction curves.
 
-If you choose not to use a reference annotation you must explicitly specify `--no_annotation`
+If you choose not to use a reference annotation you must explicitly specify `--no_transcriptome`
 
 Genepred files can alternatively be used `--gpd` to describe the reference transcriptome, but there is currently an issue where `.` periods in the CDS sequence of some files causes an error, so sticking with GTF is recommended at the moment unless you know your GPD format is free of these.
 
