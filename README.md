@@ -16,7 +16,7 @@ Ultimately this software should be suitable for assessing alignments of from a v
 - python 2.7+
 
 ##### Report Viewing Requirements
-- Mozilla Firefox or Google Chrome Browser
+- A Modern Web Browser
 
 ##### Installation (optional)
 
@@ -31,7 +31,9 @@ By default `Rscript` should be installed in your path, if it is not, you can spe
 ##### Fast start
 The following command should be sufficient for assessing a long read alignment.
 
-`alignqc analysis long_reads.bam -r ref_genome.fa -a ref_transcriptome.gpd -o long_reads.alignqc.xhtml`
+`alignqc analysis long_reads.bam -g ref_genome.fa -t ref_transcriptome.gtf -o long_reads.alignqc.xhtml`
+
+**Note:** We recommend using the `-t` or `--gtf` option for the reference transcriptome. A GenePred transcriptome annotation file may be alternatively used with the `--gpd` option, but there is an issue with these right now where genePred files with periods `.` in the CDS start and start do not parse, so I recommend using the `GTF` format input. If you must use GPD and you have periods in the CDS set these to your transcript start and stop (integer values).
 
 If you don't readily have your reference genome or reference annotation available you can try the following.
 
