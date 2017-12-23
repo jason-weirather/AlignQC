@@ -15,15 +15,11 @@ $ cd example_data
 
 Results are in example_data
 
-See basic stats
+See basic stats, error patterns, and more
 
 ![Basic stats](https://i.imgur.com/oHgEM6t.png)
 
-Error patterns
-
 ![Error patterns](https://i.imgur.com/pIG0W0F.png)
-
-And more
 
 ##### What you can do
 
