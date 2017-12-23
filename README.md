@@ -104,10 +104,12 @@ The reference genome these sequences were aligned to, in fasta format, can allow
 
 If you choose not to use a reference genome you must explicitly specify `--no_reference`
 
-#### (optional) 3. GenePred format annotation file
-Providing an annotation file provides context such as known transcripts, and exons, introns, and intergenic regions to help describe the data.  It is also necessary for rarefraction curves.
+#### (optional) 3. GTF format annotation file
+Providing an annotation file `-t` or `--gtf` provides context such as known transcripts, and exons, introns, and intergenic regions to help describe the data.  It is also necessary for rarefraction curves.
 
 If you choose not to use a reference annotation you must explicitly specify `--no_annotation`
+
+Genepred files can alternatively be used `--gpd` to describe the reference transcriptome, but there is currently an issue where `.` periods in the CDS sequence of some files causes an error, so sticking with GTF is recommended at the moment unless you know your GPD format is free of these.
 
 The genePred format is described here.
 http://www.healthcare.uiowa.edu/labs/au/IDP/IDP_gpd_format.asp
