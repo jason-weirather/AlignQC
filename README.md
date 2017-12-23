@@ -10,9 +10,20 @@ See wiki for the most up-to-date manual.
 $ git clone https://github.com/jason-weirather/AlignQC.git
 $ cd AlignQC
 $ docker run -v $(pwd)/example_data/:$(pwd)/example_data/ vacation/alignqc alignqc analyze -g $(pwd)/example_data/chr21chr22chrM.fa.gz -t $(pwd)/example_data/chr21chr22chrM.gencode25.gtf.gz $(pwd)/example_data/chr21chr22chrM.bam -o $(pwd)/example_data/myoutput.xhtml
+$ cd example_data
 ```
 
 Results are in example_data
+
+See basic stats
+
+![Basic stats](https://i.imgur.com/oHgEM6t.png)
+
+Error patterns
+
+![Error patterns](https://i.imgur.com/pIG0W0F.png)
+
+And more
 
 ##### What you can do
 
