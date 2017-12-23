@@ -41,22 +41,26 @@ See basic stats, error patterns, and more in the example data from the docker ru
 Ultimately this software should be suitable for assessing alignments of from a variety of sequencing platforms and a variety of sequence types.  The focus for the first version of this software is on the transcriptome analysis of third generation sequencing data outputs.
 
 ##### Report Generation Requirements
-- Linux
 - R
 - python 2.7+
 
 ##### Report Viewing Requirements
 - A Modern Web Browser
 
-##### Installation (optional)
+##### Installation
 
-You can add the `AlignQC/bin` directory to your path if you want to call `alignqc` directly from the command line.
+You can install to your machine via pip or conda.
 
-If you require a path for python 2.7+ other than `/usr/bin/python`, you can modify `AlignQC/bin/alignqc` to reflect this.
+If you install via conda, or use the docker requirements are taken care of for you. Otherwise you will need python 2.7 and `Rscript` should be installed in your path, if it is not, you can specify a location during the `analysis` command with the `--rscript_path` option.
 
-If you prefer to invoke AlignQC directly from python you can, i.e., `python AlignQC/bin/alignqc`
+You can install via pip with
 
-By default `Rscript` should be installed in your path, if it is not, you can specify a location during the `analysis` command with the `--rscript_path` option.
+`$ pip install AlignQC`
+
+You can install via conda, but I highly recommend creating an environment for AlignQC
+
+`$ conda create -n alignqc -c vacation AlignQC`
+`$ source activate alignqc`
 
 ##### Fast start
 The following command should be sufficient for assessing a long read alignment.
