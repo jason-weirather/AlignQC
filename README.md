@@ -4,6 +4,18 @@ See wiki for the most up-to-date manual.
 
 [https://github.com/jason-weirather/AlignQC/wiki](https://github.com/jason-weirather/AlignQC/wiki)
 
+##### Instant Start (via docker and example data):
+
+```
+$ git clone https://github.com/jason-weirather/AlignQC.git
+$ cd AlignQC
+$ docker run -v $(pwd)/example_data/:$(pwd)/example_data/ vacation/alignqc alignqc analyze -g $(pwd)/example_data/chr21chr22chrM.fa.gz -t $(pwd)/example_data/chr21chr22chrM.gencode25.gtf.gz $(pwd)/example_data/chr21chr22chrM.bam -o $(pwd)/example_data/myoutput.xhtml
+```
+
+Results are in example_data
+
+##### What you can do
+
 **Generate a report** on sequencing alignments to understand read alignments vs read sizes, error patterns in reads, annotations and rarefractions.
 
 **Share your reports** with anyone who has an internet browser.
