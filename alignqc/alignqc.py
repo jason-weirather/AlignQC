@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 """The front end of alignqc"""
+from __future__ import absolute_import
 import argparse, sys
 
 # Import our main launchers for each mode
-import analyze
-import dump
-import compare
+from . import analyze
+from . import dump
+from . import compare
 from seqtools.cli.utilities.bam_bgzf_index import external_cmd as index_bam
 
 version = '2.0.5'

@@ -1,32 +1,33 @@
 #!/usr/bin/env python
 """This script will call most of the individual modules analyzing the data"""
+from __future__ import absolute_import
 
 import argparse, sys, os, time, re, gzip, locale, inspect, time
 from subprocess import Popen, PIPE
 
 
 # BAM imports
-import bam_preprocess
-import traverse_preprocessed
-import bam_to_chr_lengths
-import get_platform_report
-import gpd_loci_analysis
-import gpd_to_exon_distro
-import make_alignment_plot
-import depth_to_coverage_report
-import locus_bed_to_rarefraction
+from . import bam_preprocess
+from . import traverse_preprocessed
+from . import bam_to_chr_lengths
+from . import get_platform_report
+from . import gpd_loci_analysis
+from . import gpd_to_exon_distro
+from . import make_alignment_plot
+from . import depth_to_coverage_report
+from . import locus_bed_to_rarefraction
 
 # BAM + reference imports
-import bam_to_context_error_plot
-import bam_to_alignment_error_plot
+from . import bam_to_context_error_plot
+from . import bam_to_alignment_error_plot
 
 # BAM + annotation
-import  annotate_from_genomic_features
-import  get_depth_subset
-import  annotated_length_analysis
-import  gpd_annotation_to_rarefraction
-import  annotated_read_bias_analysis
-import  gpd_to_junction_variance
+from . import  annotate_from_genomic_features
+from . import  get_depth_subset
+from . import  annotated_length_analysis
+from . import  gpd_annotation_to_rarefraction
+from . import  annotated_read_bias_analysis
+from . import  gpd_to_junction_variance
 
 # BAM
 from seqtools.cli.utilities.gpd_to_bed_depth import external_cmd as gpd_to_bed_depth

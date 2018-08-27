@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import print_function
 import sys, argparse, re, os
 from subprocess import Popen, PIPE
 from Bio.Statistics import average, median, standard_deviation
@@ -84,10 +85,10 @@ def main():
     p.communicate()
     results.append(c)
   k = results[0].keys()
-  print "feature\tsum\tmedian\taverage\tstandard deviation"
+  print("feature\tsum\tmedian\taverage\tstandard deviation")
   for feature in sorted(k):
     arr = [x[feature] for x in results]
-    print feature+"\t"+str(sum(arr))+"\t"+str(median(arr))+"\t"+str(average(arr))+"\t"+str(standard_deviation(arr))
+    print(feature+"\t"+str(sum(arr))+"\t"+str(median(arr))+"\t"+str(average(arr))+"\t"+str(standard_deviation(arr)))
 
 if __name__=="__main__":
   main()

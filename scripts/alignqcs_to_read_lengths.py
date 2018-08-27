@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import print_function
 import argparse, sys, os
 from shutil import rmtree
 from multiprocessing import cpu_count
@@ -17,7 +18,7 @@ def main():
       f = line.rstrip().split("\t")
       l = int(f[4])
       lengths.append(l)
-    print name +"\t"+"\t".join([str(x) for x in sorted(lengths)])
+    print(name +"\t"+"\t".join([str(x) for x in sorted(lengths)]))
     p.communicate()
 
   # Temporary working directory step 3 of 3 - Cleanup

@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import print_function
 import argparse, sys, os, gzip
 from shutil import rmtree
 from multiprocessing import cpu_count
@@ -27,8 +28,8 @@ def main(args):
       chrlens[f[0]]=int(f[1])
   total_len = sum(chrlens.values())
   cov_len = sum(total.values())
-  print total_len
-  print cov_len
+  print(total_len)
+  print(cov_len)
   depths = sorted(total.keys())
   #bases = total_len-cov_len
   prev = total_len-cov_len

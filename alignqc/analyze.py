@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import absolute_import
 import argparse, os, inspect, sys, gzip
 from subprocess import Popen, PIPE
 from tempfile import mkdtemp, gettempdir
@@ -6,8 +7,8 @@ from shutil import rmtree
 from distutils.spawn import find_executable
 from seqtools.format.gtf import GTFFile
 
-import prepare_all_data
-import create_html
+from . import prepare_all_data
+from . import create_html
 
 g_version = None
 

@@ -1,5 +1,6 @@
 #!/usr/bin/env python
-import argparse, sys, os, re, base64, zlib, gzip, StringIO
+from __future__ import print_function
+import argparse, sys, os, re, base64, zlib, gzip, io
 from shutil import rmtree
 from multiprocessing import cpu_count
 from tempfile import mkdtemp, gettempdir
@@ -73,11 +74,11 @@ def main(args):
     if oname not in names:
       sys.stderr.write("ERROR '"+args.extract+"' is not found. Use --list option to see what is available\n")
       sys.exit()
-    sio = StringIO.StringIO(zlib.decompress(names[oname],15+32))
+    sio = io.StringIO(zlib.decompress(names[oname],15+32))
     header = sio.readline()
     for v in sio:
       b = Bed12(v)
-      print b.get_gpd_line()
+      print(b.get_gpd_line())
     return
   # figure out what the stored name is
   oname = shortnames[exname]

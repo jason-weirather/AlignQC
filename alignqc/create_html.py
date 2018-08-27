@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import absolute_import
 import argparse, sys, os, time, re, gzip, locale, inspect
 from shutil import rmtree, copy, copytree
 from tempfile import mkdtemp, gettempdir
@@ -6,7 +7,7 @@ from tempfile import mkdtemp, gettempdir
 from seqtools.range.multi import BedStream
 from seqtools.format.gpd import GPDStream
 
-import make_solo_html
+from . import make_solo_html
 
 # global
 g_version = None

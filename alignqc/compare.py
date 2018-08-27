@@ -1,10 +1,11 @@
 #!/usr/bin/env python
+from __future__ import absolute_import
 import argparse, sys, os, re, gzip
 from shutil import rmtree, copyfile
 from multiprocessing import cpu_count
 from tempfile import mkdtemp, gettempdir
 
-import dump
+from . import dump
 from seqtools.statistics import average, N50, median, standard_deviation
 
 
